@@ -1,0 +1,12 @@
+---
+title: "Existing Articles"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Existing Articles on Comparing Bayes Computation Methods
+
+http://www.stat.columbia.edu/~gelman/research/published/stan_jebs_2.pdf - Article by Gelman on Introduction to STAN, includes comparisons to JAGS, BUGS, 
