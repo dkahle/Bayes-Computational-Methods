@@ -1,4 +1,5 @@
 library(R2OpenBUGS)
+setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Beta-Binomial")
 
 data(schools)
 
