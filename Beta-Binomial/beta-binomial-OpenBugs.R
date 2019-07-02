@@ -1,27 +1,23 @@
 library(R2OpenBUGS)
 setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Beta-Binomial")
 
-data(schools)
-
-nummodel <- function(){
-  for (j in 1:J){
-    y[j] ~ dnorm (theta[j], tau.y[j])
-    theta[j] ~ dnorm (mu.theta, tau.theta)
-    tau.y[j] <- pow(sigma.y[j], -2)}
-  mu.theta ~ dnorm (0.0, 1.0E-6)
-  tau.theta <- pow(sigma.theta, -2)
-  sigma.theta ~ dunif (0, 1000)
-}
-write.model(nummodel, "nummodel.txt")
-model.file1 = paste(getwd(),"nummodel.txt", sep="/")
-file.show("nummodel.txt")
-
-J <- nrow(schools)
-y <- schools$estimate
-sigma.y <- schools$sd
-data <- list ("J", "y", "sigma.y")
-inits <- function(){
-  list(theta = rnorm(J, 0, 100), mu.theta = rnorm(1, 0, 100), sigma.theta = runif(1, 0, 100))
+model <- function() {
+  y ~ dbin(theta,10)
+  theta ~ dbeta(1,1)
 }
 
+data <- list(y = 2)
+inits <- list((list(theta = 1)))
+parameters <- c("theta")
 
+model.file <- file.path(tempdir(), "model.txt")
+write.model(model, model.file)
+
+WINE="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/wine"
+WINEPATH="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/winepath"
+OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe" #~
+
+b_model <- bugs(data, inits, parameters, model.file, n.chains = 1,
+                n.iter = 10000, n.burnin = 1000, OpenBUGS.pgm=OpenBUGS.pgm, 
+                WINE=WINE, WINEPATH=WINEPATH,useWINE=T)
+b_model$summary
