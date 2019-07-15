@@ -1,4 +1,5 @@
 library(tidyverse)
+library(here)
 setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/8-Schools")
 
 library(rjags)

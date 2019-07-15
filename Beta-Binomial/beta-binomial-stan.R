@@ -1,7 +1,9 @@
 library(rstan)
+library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
-setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Beta-Binomial")
+
+stan_file <- here("Beta-Binomial", "beta-binomial.stan")
 
 data <- list(y=2)
 

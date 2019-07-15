@@ -1,5 +1,5 @@
 library(R2OpenBUGS)
-setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Beta-Binomial")
+library(here)
 
 model <- function() {
   y ~ dbin(theta,10)

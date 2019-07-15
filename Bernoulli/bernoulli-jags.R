@@ -1,8 +1,9 @@
 library(tidyverse)
-setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Bernoulli")
-
+library(here)
 library(rjags)
 library(runjags)
+
+
 
 model <- "
   model{

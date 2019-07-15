@@ -1,7 +1,9 @@
 library(rstan)
+library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
-setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Poisson-Gamma")
+
+stan_file <- here("Poisson-Gamma", "poisson-gamma.stan")
 
 data <- list(y=5)
 
