@@ -13,7 +13,7 @@ model <- "
       theta[i] <- mu + tau * eta[i]
       y[i] ~ dnorm(theta[i], sigma[i])
     }
-    mu ~ dnorm(0,0.0001)
+    mu ~ dunif(-10000,10000)
     tau ~ dunif(0,1000)
   }
 "
@@ -25,6 +25,6 @@ schools_dat <- list(J = 8,
 monitor <- c("mu", "tau", "eta", "theta")
 
 results <- run.jags(model, data = schools_dat, monitor = monitor, 
-                    burnin = 1000, sample = 10000, n.chains = 4)
+                    burnin = 5000, sample = 50000, thin = 10, n.chains = 4)
 
 results
