@@ -1,6 +1,4 @@
 library(tidyverse)
-setwd("~/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods/Beta-Binomial")
-
 library(rjags)
 library(runjags)
 
