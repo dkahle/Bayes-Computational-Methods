@@ -3,7 +3,7 @@ library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-stan_file <- here("Beta-Binomial", "beta-binomial.stan")
+stan_file <- here("beta-binomial", "beta-binomial.stan")
 
 data <- list(y=2)
 

@@ -3,7 +3,7 @@ library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-stan_file <- here("8-Schools", "8-Schools.stan")
+stan_file <- here("8-schools", "8-Schools.stan")
 
 schools_dat <- list(J = 8, 
                     y = c(28,  8, -3,  7, -1,  1, 18, 12),

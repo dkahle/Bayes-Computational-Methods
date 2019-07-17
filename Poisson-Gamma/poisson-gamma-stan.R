@@ -3,7 +3,7 @@ library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-stan_file <- here("Poisson-Gamma", "poisson-gamma.stan")
+stan_file <- here("poisson-gamma", "poisson-gamma.stan")
 
 data <- list(y=5)
 
