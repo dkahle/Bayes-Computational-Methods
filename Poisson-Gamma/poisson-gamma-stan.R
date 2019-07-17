@@ -7,6 +7,6 @@ stan_file <- here("Poisson-Gamma", "poisson-gamma.stan")
 
 data <- list(y=5)
 
-fit <- stan(file = 'poisson-gamma.stan', data = data, warmup = 1000,
+fit <- stan(file = stan_file, data = data, warmup = 1000,
             iter = 11000, chains = 4)
 print(fit)

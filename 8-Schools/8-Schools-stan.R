@@ -14,6 +14,7 @@ fit <- stan(file = stan_file, data = schools_dat, warmup = 1000,
 print(fit)
 
 
-fit_old <- stan(file = '8-Schools-old.stan', data = schools_dat, warmup = 1000,
-            iter = 11000, chains = 4)
-print(fit_old)
+
+# fit_old <- stan(file = '8-Schools-old.stan', data = schools_dat, warmup = 1000,
+#             iter = 11000, chains = 4)
+# print(fit_old)
