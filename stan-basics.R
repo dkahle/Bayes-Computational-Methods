@@ -108,7 +108,7 @@ stan_trace(fit, inc_warmup = TRUE)
 ############################################################
 # note: these mix the chains
 
-library("bayesplot"); theme_set(theme_bw())
+library("bayesplot"); theme_set(theme_minimal())
 ls("package:bayesplot")
 apropos("mcmc_")
 
