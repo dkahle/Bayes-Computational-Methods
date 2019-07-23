@@ -57,7 +57,18 @@ str(stan_fit, 3)
 
 
 get_posterior_mean(stan_fit)
-
-stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
+stan_dens(fit) + theme_bw()
 stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
+
+
+
+## assess convergence issues 
+###################################################################################
+
+fit %>% as.array() %>% mcmc_acf_bar()
+fit %>% as.array() %>% mcmc_pairs()
+fit %>% as.array() %>% mcmc_trace()
+
+# see each chain
+stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
 
