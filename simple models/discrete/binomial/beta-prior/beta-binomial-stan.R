@@ -5,6 +5,7 @@ library("here")
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rstan"); rstan_options(auto_write = TRUE)
+library("bayesplot")
 
 
 
@@ -53,11 +54,9 @@ stan_fit <- stan(
 ## assess fit
 ################################################################################
 
-str(stan_fit, 3)
-
-
+summary(stan_fit)$summary
 get_posterior_mean(stan_fit)
-stan_dens(fit) + theme_bw()
+stan_dens(stan_fit) + theme_bw()
 stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
 
 
@@ -65,9 +64,9 @@ stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
 ## assess convergence issues 
 ###################################################################################
 
-fit %>% as.array() %>% mcmc_acf_bar()
-fit %>% as.array() %>% mcmc_pairs()
-fit %>% as.array() %>% mcmc_trace()
+stan_fit %>% as.array() %>% mcmc_acf_bar()
+stan_fit %>% as.array() %>% mcmc_pairs()
+stan_fit %>% as.array() %>% mcmc_trace()
 
 # see each chain
 stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
