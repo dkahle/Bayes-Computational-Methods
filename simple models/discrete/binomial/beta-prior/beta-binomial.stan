@@ -4,11 +4,11 @@ data {
 }
 
 parameters {
-  real theta;                
+  real p;                
 }
 
 model {
-  y ~ binomial(n,theta);
-  theta ~ beta(1,1);
+  y ~ binomial(n,p);
+  p ~ beta(1,1);
 }
 

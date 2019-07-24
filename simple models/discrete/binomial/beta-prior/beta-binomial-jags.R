@@ -30,11 +30,11 @@ jags_data <- list(
 jags_model <- "
   model{
     y ~ dbin(theta,n)
-    theta ~ dbeta(1,1)
+    p ~ dbeta(1,1)
   }
 "
 
-monitor <- c("theta")
+monitor <- c("p")
 
 
 ## fit model

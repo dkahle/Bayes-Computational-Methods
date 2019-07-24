@@ -1,13 +1,65 @@
-library(nimble)
+## load required packages and set basic options
+################################################################################
 
-rCode <- nimbleCode({
-  y ~ dbern(theta)
-  theta ~ dbeta(1,1)
+library("tidyverse"); theme_set(theme_minimal())
+library("parallel"); options(mc.cores = detectCores())
+library("nimble")
+
+
+
+## generate/specify data
+################################################################################
+
+p <- .25 # bernoulli p
+
+set.seed(1)
+
+(y <- rbinom(1, 1, p))
+
+nimble_data <- list(
+  "y" = y
+)
+
+
+## specify jags model
+################################################################################
+
+nimble_model <- nimbleCode({
+  y ~ dbin(p,1)
+  p ~ dbeta(1,1)
 })
 
-data <- list(y = 1)
-inits <- list(theta = 0.5)
+monitors = c("p")
 
-results <- nimbleMCMC(rCode, data = data, inits = inits, monitors = c("theta"), 
-                      nchains = 4, niter = 11000, nburnin = 1000, summary = TRUE)
-results$summary
+
+## fit model
+################################################################################
+
+n_chains <- 4L
+n_iter <- 1e4L
+n_warmup <- 1e3L
+
+nimble_inits <- list(
+  "p" = rbeta(1,1,1)
+)
+
+nimble_fit <- nimbleMCMC(
+  "code" = nimble_model, "data" = nimble_data, "inits" = nimble_inits, 
+  "monitors" = monitors, "nchains" = n_chains, "niter" = n_iter, 
+  "nburnin" = n_warmup, "summary" = TRUE
+)
+
+
+## assess fit
+################################################################################
+
+nimble_fit$summary$all.chains
+
+
+
+## assess convergence issues 
+###################################################################################
+
+
+
+

@@ -21,7 +21,6 @@ set.seed(1)
 
 stan_data <- list(
   "n" = n,
-  "p" = p,
   "y" = y
 )
 

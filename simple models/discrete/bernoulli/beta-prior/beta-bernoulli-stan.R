@@ -19,7 +19,6 @@ set.seed(1)
 (y <- rbinom(1, 1, p))
 
 stan_data <- list(
-  "p" = p,
   "y" = y
 )
 

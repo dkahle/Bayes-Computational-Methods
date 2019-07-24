@@ -3,10 +3,10 @@ data {
 }
 
 parameters {
-  real theta;                
+  real p;                
 }
 
 model {
-  y ~ bernoulli(theta);
+  y ~ bernoulli(p);
 }
 

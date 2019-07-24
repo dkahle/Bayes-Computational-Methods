@@ -17,7 +17,6 @@ set.seed(1)
 (y <- rpois(1, theta))
 
 jags_data <- list(
-  "theta" = theta,
   "y" = y
 )
 
@@ -33,7 +32,6 @@ jags_model <- "
 "
 
 monitor <- c("theta")
-inits <- list(list(theta = 0.5))
 
 
 ## fit model
@@ -44,7 +42,7 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 jags_fit <- run.jags(
-  "model" = jags_model, "data" = jags_data, inits = inits, "monitor" = monitor, 
+  "model" = jags_model, "data" = jags_data, "monitor" = monitor, 
   "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
 ) 
 
@@ -62,67 +60,3 @@ jags_fit
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-library(tidyverse)
-library(rjags)
-library(runjags)
-
-model <- "
-  model{
-    y ~ dbin(theta,n)
-    theta ~ dbeta(1,1)
-  }
-"
-
-data <- list(y = 2, n = 10)
-inits <- list(list(theta = 0.5))
-monitor <- c("theta")
-
-results <- run.jags(model, data = data, monitor = monitor, 
-                    burnin = 1000, sample = 10000, n.chains = 4)
-
-results
-
-
-
-
-
-
-
-
-
-
-
-
-library(tidyverse)
-
-library(rjags)
-library(runjags)
-
-model <- "
-  model{
-    y ~ dpois(theta)
-    theta ~ dgamma(3,1)
-  }
-"
-
-data <- list(y = 5)
-inits <- list(list(theta = 0.5))
-monitor <- c("theta")
-
-results <- run.jags(model, data = data, monitor = monitor, inits = inits, 
-                    burnin = 1000, sample = 10000, n.chains = 4)
-
-results
