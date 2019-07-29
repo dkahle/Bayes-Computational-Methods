@@ -4,6 +4,7 @@
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rjags"); library("runjags")
+library("bayesplot")
 
 
 
@@ -29,7 +30,7 @@ jags_data <- list(
 
 jags_model <- "
   model{
-    y ~ dbin(theta,n)
+    y ~ dbin(p,n)
     p ~ dbeta(1,1)
   }
 "
@@ -56,11 +57,23 @@ jags_fit <- run.jags(
 
 jags_fit
 
+jags_fit_object <- jags_fit$mcmc %>% as.array()
+dim(jags_fit_object) <- c(dim(jags_fit_object), 1)
+dimnames(jags_fit_object) <- list(
+  "iterations" = NULL, 
+  "chains" = 1:n_chains, 
+  "parameters" = monitor
+)
+
+
+jags_fit_object %>% bayesplot::mcmc_dens()
 
 
 ## assess convergence issues 
 ###################################################################################
 
+jags_fit_object %>% mcmc_acf_bar()
+jags_fit_object %>% mcmc_trace()
 
 
 
