@@ -53,11 +53,12 @@ stan_fit <- stan(
 ## assess fit
 ################################################################################
 
+str(stan_fit, 2)
+
 summary(stan_fit)$summary
 get_posterior_mean(stan_fit)
 stan_dens(stan_fit) + theme_bw()
 stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
-
 
 
 ## assess convergence issues 

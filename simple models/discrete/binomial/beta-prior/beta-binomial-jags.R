@@ -69,6 +69,7 @@ dimnames(jags_fit_object) <- list(
 jags_fit_object %>% bayesplot::mcmc_dens()
 
 
+
 ## assess convergence issues 
 ###################################################################################
 

@@ -58,7 +58,8 @@ nimble_fit <- nimbleMCMC(
 
 nimble_fit$summary$all.chains
 
-
+str(nimble_fit$samples)
+str(nimble_fit$samples %>% as.array())
 
 ## assess convergence issues 
 ###################################################################################
