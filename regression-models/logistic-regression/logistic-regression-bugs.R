@@ -10,17 +10,25 @@ library("R2OpenBUGS")
 ## generate/specify data
 ################################################################################
 
-p <- .25 # binomial p
-n <-  10 # binomial n
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 
 set.seed(1)
 
-(y <- rbinom(1, n, p))
+(x <- rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
+
 
 bugs_data <- list(
-  "y" = y,
-  "N" = n
+  "n" = n,
+  "y" = y, 
+  "x" = x, 
+  "tau" = (1 / 1000)^2
 )
+
 
 
 
@@ -28,15 +36,19 @@ bugs_data <- list(
 ################################################################################
 
 bugs_model <- function() {
-  y ~ dbin(p,N)
-  p ~ dbeta(1,1)
+  for (i in 1:n) {
+    logit(theta[i]) <- alpha + beta * x[i]
+    y[i] ~ dbern(theta[i])
+  }
+  alpha ~ dnorm(0,tau)
+  beta ~ dnorm(0,tau)
 }
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
 
-monitor <- "p"
+monitor <- c("alpha", "beta")
 
 
 ## Specify path to WINE if using WINE 
@@ -55,16 +67,16 @@ OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
 ## fit model
 ################################################################################
 
-n_chains <- 4L
-n_iter <- 1e4L
-n_warmup <- 1e3L
+n_chains <- 2L
+n_iter <- 1e3L
+n_warmup <- 1e2L
 
 
 bugs_fit <- bugs(
   "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = monitor, 
   "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
   "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-  "useWINE" = T
+  "useWINE" = T, debug = TRUE
 )
 
 
