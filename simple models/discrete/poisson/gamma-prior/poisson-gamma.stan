@@ -10,4 +10,3 @@ model {
   y ~ poisson(theta);
   theta ~ gamma(3,1);
 }
-

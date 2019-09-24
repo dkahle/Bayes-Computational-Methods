@@ -6,6 +6,7 @@ library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rstan"); rstan_options(auto_write = TRUE)
 library("bayesplot")
+library("bench")
 
 
 
@@ -75,4 +76,19 @@ stan_fit %>% as.array() %>% mcmc_trace()
 
 # see each chain
 stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
+
+
+## benchmarking
+###################################################################################
+
+
+bench_results <- mark(
+  stan_fit <- stan(
+    "file" = stan_file, "data" = stan_data, 
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  ),
+  iterations = 3
+)
+bench_results[1,2:9]
+
 

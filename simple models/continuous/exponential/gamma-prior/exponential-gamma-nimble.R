@@ -4,6 +4,7 @@
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("nimble")
+library("bench")
 
 
 
@@ -65,6 +66,20 @@ nimble_fit$summary$all.chains
 
 ## assess convergence issues 
 ###################################################################################
+
+
+## benchmarking
+###################################################################################
+
+bench_results <- mark(
+  nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = nimble_data, 
+    "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  ),
+  iterations = 3
+)
+bench_results[1,2:9]
 
 
 

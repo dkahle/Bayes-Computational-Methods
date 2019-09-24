@@ -79,17 +79,13 @@ jags_fit_object %>% mcmc_trace()
 ## benchmarking
 ###################################################################################
 
-jags_call <- run.jags(
-  "model" = jags_model, "data" = jags_data, "monitor" = monitor, 
-  "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-)
 
 bench_results <- mark(
   run.jags(
     "model" = jags_model, "data" = jags_data, "monitor" = monitor, 
     "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
   ),
-  iterations = 5
+  iterations = 3
 )
 bench_results[1,2:9]
 
