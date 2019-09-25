@@ -4,6 +4,7 @@
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("nimble")
+library("bench")
 
 
 
@@ -61,54 +62,20 @@ nimble_fit$summary$all.chains
 ###################################################################################
 
 
+## benchmarking
+###################################################################################
+
+bench_results <- mark(
+  nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = nimble_data, 
+    "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  ),
+  iterations = 3
+)
+bench_results[1,2:9]
 
 
 
 
 
-
-
-
-
-
-
-
-
-library(nimble)
-
-rCode <- nimbleCode({
-  for (i in 1:10) {
-    y[i] ~ dnorm(mu, 1 / tau)
-  }
-  mu ~ dnorm(0,1)
-})
-
-data <- list(y = c(3,  2, 5,  1, -2, 3, 2, 8, -4, 6), tau = 0.5)
-inits <- list(mu = 0)
-monitors <- c("mu")
-
-results <- nimbleMCMC(rCode, data = data, inits = inits, monitors = monitors, 
-                      nchains = 4, niter = 11000, nburnin = 1000, summary = TRUE)
-results$summary$all.chains
-
-
-
-
-
-
-
-
-
-library(nimble)
-
-rCode <- nimbleCode({
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
-})
-
-data <- list(y = 5)
-inits <- list(theta = 0.5)
-
-results <- nimbleMCMC(rCode, data = data, inits = inits, monitors = c("theta"), 
-                      nchains = 4, niter = 11000, nburnin = 1000, summary = TRUE)
-results$summary$all.chains

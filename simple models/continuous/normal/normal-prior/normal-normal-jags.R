@@ -4,6 +4,7 @@
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rjags"); library("runjags")
+library("bench")
 
 
 
@@ -76,3 +77,21 @@ jags_fit_object %>% bayesplot::mcmc_dens()
 
 jags_fit_object %>% mcmc_acf_bar()
 jags_fit_object %>% mcmc_trace()
+
+
+
+## benchmarking
+###################################################################################
+
+
+bench_results <- mark(
+  run.jags(
+    "model" = jags_model, "data" = jags_data, "monitor" = monitor, 
+    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
+  ),
+  iterations = 3
+)
+bench_results[1,2:9]
+
+
+

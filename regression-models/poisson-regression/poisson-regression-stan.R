@@ -13,16 +13,20 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-lambda <- 1/2 # exponential lambda
-n <- 10       # sample size
+n <- 20L # sample size
+alpha <- 2 # intercept
+beta <- 2 # single coefficient
 
 set.seed(1)
 
-(y <- rexp(n, lambda))
+(x <- runif(n, 0, 10)) # observed x values
+lambda <- alpha + beta * x 
+(y <- rpois(n,lambda))
 
 stan_data <- list(
-  "y" = y,
-  "N" = n
+  "N" = n,
+  "y" = y, 
+  "x" = x
 )
 
 
@@ -31,7 +35,7 @@ stan_data <- list(
 ################################################################################
 
 # read it in from file
-stan_file <- here("simple models", "continuous", "exponential", "gamma-prior", "exponential-gamma.stan")
+stan_file <- here("regression-models", "poisson-regression", "poisson-regression.stan")
 file.show(stan_file)
 
 
@@ -54,11 +58,12 @@ stan_fit <- stan(
 ## assess fit
 ################################################################################
 
+str(stan_fit, 2)
+
 summary(stan_fit)$summary
 get_posterior_mean(stan_fit)
 stan_dens(stan_fit) + theme_bw()
 stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
-
 
 
 ## assess convergence issues 
@@ -85,6 +90,4 @@ bench_results <- mark(
   iterations = 3
 )
 bench_results[1,2:9]
-
-
 

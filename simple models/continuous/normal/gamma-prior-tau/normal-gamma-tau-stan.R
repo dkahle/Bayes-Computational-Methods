@@ -6,6 +6,7 @@ library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rstan"); rstan_options(auto_write = TRUE)
 library("bayesplot")
+library("bench")
 
 
 
@@ -74,23 +75,16 @@ stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
 
 
 
+## benchmarking
+###################################################################################
 
 
+bench_results <- mark(
+  stan_fit <- stan(
+    "file" = stan_file, "data" = stan_data, 
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  ),
+  iterations = 3
+)
+bench_results[1,2:9]
 
-
-
-
-
-
-library(rstan)
-library(here)
-options(mc.cores = parallel::detectCores())
-rstan_options(auto_write = TRUE)
-
-stan_file <- here("simple models", "continuous", "normal", "normal-normal","normal-normal.stan")
-
-data <- list(J = 10, y = c(3,  2, 5,  1, -2, 3, 2, 8, -4, 6), tau = 0.5)
-
-fit <- stan(file = stan_file, data = data, warmup = 1000,
-            iter = 11000, chains = 4)
-print(fit)

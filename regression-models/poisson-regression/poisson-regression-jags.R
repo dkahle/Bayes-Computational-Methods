@@ -12,16 +12,20 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
-q0 <- 0.5 # bernoulli p
+n <- 20L # sample size
+alpha <- 2 # intercept
+beta <- 2 # single coefficient
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(x <- runif(n, 0, 10)) # observed x values
+lambda <- alpha + beta * x 
+(y <- rpois(n,lambda))
 
 jags_data <- list(
-  "y" = y,
-  "q0" = q0
+  "n" = n,
+  "y" = y, 
+  "x" = x
 )
 
 
@@ -31,15 +35,16 @@ jags_data <- list(
 
 jags_model <- "
   model{
-    y ~ dpois(theta)
-    z ~ dbern(q0)
-    theta0 <- 1
-    theta1 ~ dexp(1)
-    theta <- z * theta0 + (1-z) * theta1
+    for (i in 1:n) {
+      log(lambda[i]) <- alpha + beta * x[i]
+      y[i] ~ dpois(lambda[i])
+    }
+    alpha ~ dnorm(0, 1 / (100 ^ 2))
+    beta ~ dnorm(0, 1 / (100 ^ 2))
   }
 "
 
-monitor <- c("z", "theta", "theta1")
+monitor <- c("alpha", "beta")
 
 
 ## fit model
@@ -81,7 +86,6 @@ jags_fit_object %>% mcmc_acf_bar()
 jags_fit_object %>% mcmc_trace()
 
 
-
 ## benchmarking
 ###################################################################################
 
@@ -94,5 +98,6 @@ bench_results <- mark(
   iterations = 3
 )
 bench_results[1,2:9]
+
 
 

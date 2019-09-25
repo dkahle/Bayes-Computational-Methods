@@ -11,32 +11,38 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-lambda <- 1/2 # exponential lambda
-n <- 10       # sample size
+n <- 20L # sample size
+alpha <- 2 # intercept
+beta <- 2 # single coefficient
 
 set.seed(1)
 
-(y <- rexp(n, lambda))
+(x <- runif(n, 0, 10)) # observed x values
+lambda <- alpha + beta * x 
+(y <- rpois(n,lambda))
 
 nimble_data <- list(
-  "y" = y
+  "n" = n,
+  "y" = y, 
+  "x" = x
 )
 
-nimble_constants <- list(
-  "N" = n
-)
+
 
 
 ## specify jags model
 ################################################################################
 
 nimble_model <- nimbleCode({
-  for (i in 1:N) {
-    y[i] ~ dexp(lambda)
+  for (i in 1:n) {
+    log(lambda[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(lambda[i])
   }
-  lambda ~ dgamma(1,1)
+  alpha ~ dnorm(0, 1 / (100 ^ 2))
+  beta ~ dnorm(0, 1 / (100 ^ 2))
 })
-monitors = c("lambda")
+
+monitors = c("alpha", "beta")
 
 
 ## fit model
@@ -47,13 +53,15 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "lambda" = rgamma(1,1,1)
+  "alpha" = rnorm(1,0,(1 / 1000^2)),
+  "beta" = rnorm(1,0,(1 / 1000^2))
 )
 
+
 nimble_fit <- nimbleMCMC(
-  "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
-  "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
-  "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  "code" = nimble_model, "data" = nimble_data, "inits" = nimble_inits, 
+  "monitors" = monitors, "nchains" = n_chains, "niter" = n_iter, 
+  "nburnin" = n_warmup, "summary" = TRUE
 )
 
 
@@ -62,10 +70,12 @@ nimble_fit <- nimbleMCMC(
 
 nimble_fit$summary$all.chains
 
-
+str(nimble_fit$samples)
+str(nimble_fit$samples %>% as.array())
 
 ## assess convergence issues 
 ###################################################################################
+
 
 
 ## benchmarking
@@ -80,6 +90,7 @@ bench_results <- mark(
   iterations = 3
 )
 bench_results[1,2:9]
+
 
 
 
