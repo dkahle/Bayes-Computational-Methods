@@ -1,11 +1,9 @@
 ## load required packages and set basic options
 ################################################################################
 
-library("here")
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("rstan"); rstan_options(auto_write = TRUE)
-library("bayesplot")
+library("nimble")
 library("bench")
 
 
@@ -23,21 +21,28 @@ set.seed(1)
 lambda <- alpha + beta * x 
 (y <- rpois(n,lambda))
 
-stan_data <- list(
-  "N" = n,
+nimble_data <- list(
+  "n" = n,
   "y" = y, 
   "x" = x
 )
 
 
 
-## specify stan model
+
+## specify jags model
 ################################################################################
 
-# read it in from file
-stan_file <- here("regression-models", "poisson-regression", "poisson-regression.stan")
-file.show(stan_file)
+nimble_model <- nimbleCode({
+  for (i in 1:n) {
+    log(lambda[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(lambda[i])
+  }
+  alpha ~ dnorm(0, 1 / (100 ^ 2))
+  beta ~ dnorm(0, 1 / (100 ^ 2))
+})
 
+monitors = c("alpha", "beta")
 
 
 ## fit model
@@ -47,47 +52,45 @@ n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
-stan_fit <- stan(
-  "file" = stan_file, "data" = stan_data, 
-  "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+nimble_inits <- list(
+  "alpha" = rnorm(1,0,(1 / 1000^2)),
+  "beta" = rnorm(1,0,(1 / 1000^2))
 )
 
 
+nimble_fit <- nimbleMCMC(
+  "code" = nimble_model, "data" = nimble_data, "inits" = nimble_inits, 
+  "monitors" = monitors, "nchains" = n_chains, "niter" = n_iter, 
+  "nburnin" = n_warmup, "summary" = TRUE
+)
 
 
 ## assess fit
 ################################################################################
 
-str(stan_fit, 2)
+nimble_fit$summary$all.chains
 
-summary(stan_fit)$summary
-get_posterior_mean(stan_fit)
-stan_dens(stan_fit) + theme_bw()
-stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
-
+str(nimble_fit$samples)
+str(nimble_fit$samples %>% as.array())
 
 ## assess convergence issues 
 ###################################################################################
-
-stan_fit %>% as.array() %>% mcmc_acf_bar()
-stan_fit %>% as.array() %>% mcmc_pairs()
-stan_fit %>% as.array() %>% mcmc_trace()
-
-# see each chain
-stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
 
 
 
 ## benchmarking
 ###################################################################################
 
-
 bench_results <- mark(
-  stan_fit <- stan(
-    "file" = stan_file, "data" = stan_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = nimble_data, 
+    "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ),
   iterations = 3
 )
 bench_results[1,2:9]
+
+
+
 
