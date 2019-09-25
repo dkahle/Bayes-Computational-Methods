@@ -6,7 +6,7 @@ data {
 
 parameters {
   real alpha;
-  real beta;             
+  real beta;              
 }
 
 model {
