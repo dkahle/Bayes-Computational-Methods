@@ -65,15 +65,15 @@ nimble_fit$summary$all.chains
 ## benchmarking
 ###################################################################################
 
-bench_results <- mark(
-  nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, 
-    "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-  ),
-  iterations = 3
-)
-bench_results[1,2:9]
+# bench_results <- mark(
+  # nimble_fit <- nimbleMCMC(
+  #   "code" = nimble_model, "data" = nimble_data,
+  #   "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains,
+  #   "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  # ),
+#   iterations = 3
+# )
+# bench_results[1,2:9]
 
 
 
