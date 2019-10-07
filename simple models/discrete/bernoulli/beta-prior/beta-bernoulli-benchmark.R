@@ -14,36 +14,36 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # bernoulli p
 set.seed(1)
-(y <- rpois(1, theta))
+(y <- rbinom(1, 1, p))
 jags_data <- list(
   "y" = y
 )
 jags_model <- "
   model{
-    y ~ dpois(theta)
-    theta ~ dgamma(3,1)
+    y ~ dbern(p)
+    p ~ dbeta(1,1)
   }
 "
-jags_monitor <- c("theta")
+jags_monitor <- c("p")
 
 ## BUGS Code
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # bernoulli p
 set.seed(1)
-(y <- rpois(1, theta))
+(y <- rbinom(1, 1, p))
 bugs_data <- list(
   "y" = y
 )
 bugs_model <- function() {
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  y ~ dbin(p,1)
+  p ~ dbeta(1,1)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-bugs_monitor <- "theta"
+bugs_monitor <- "p"
 
 WINE="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/wine"
 WINEPATH="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/winepath"
@@ -55,32 +55,31 @@ OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
 ## Nimble Code
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # bernoulli p
 set.seed(1)
-(y <- rpois(1, theta))
+(y <- rbinom(1, 1, p))
 nimble_data <- list(
   "y" = y
 )
 nimble_model <- nimbleCode({
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  y ~ dbin(p,1)
+  p ~ dbeta(1,1)
 })
-nimble_monitor <- c("theta")
+nimble_monitor = c("p")
 nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
+  "p" = rbeta(1,1,1)
 )
 
 ## STAN Code
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # bernoulli p
 set.seed(1)
-(y <- rpois(1, theta))
+(y <- rbinom(1, 1, p))
 stan_data <- list(
-  "theta" = theta,
   "y" = y
 )
-stan_file <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.stan")
+stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -125,9 +124,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "poisson", "gamma-prior")
-file.rename(paste0(rds_file_location, "/poisson-gamma.rds"), 
-            paste0(rds_file_location, "/poisson-gamma1.rds"))
+rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
+file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
+            paste0(rds_file_location, "/beta-bernoulli1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -158,5 +157,5 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/poisson-gamma1.rds"), 
-            paste0(rds_file_location, "/poisson-gamma.rds"))
+file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
+            paste0(rds_file_location, "/beta-bernoulli.rds"))
