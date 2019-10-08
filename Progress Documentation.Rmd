@@ -1,0 +1,13 @@
+---
+title: "Progress Documentation"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+  \item 10 / 08 / 2019: Nimble crashes my Mac laptop every now and then, so I should do more simulation with that.
+\end{itemize}
+
