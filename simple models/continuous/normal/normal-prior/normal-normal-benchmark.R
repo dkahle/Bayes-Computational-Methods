@@ -14,36 +14,49 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+sigma <- 2 # normal sigma
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, sigma))
 jags_data <- list(
-  "y" = y
+  "y" = y,
+  "tau" = 1 / sigma ^2,
+  "N" = n
 )
 jags_model <- "
   model{
-    y ~ dbern(p)
-    p ~ dbeta(1,1)
+    for (i in 1:N) {
+      y[i] ~ dnorm(mu, 1 / tau)
+    }
+    mu ~ dnorm(0, 1)
   }
 "
-jags_monitor <- c("p")
+jags_monitor <- c("mu")
 
 ## BUGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+sigma <- 2 # normal sigma
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, sigma))
 bugs_data <- list(
-  "y" = y
+  "y" = y,
+  "tau" = 1 / sigma ^2,
+  "N" = n
 )
 bugs_model <- function() {
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu, sigma_sq)
+  }
+  sigma_sq <- 1 / tau
+  mu ~ dnorm(0, 1)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-bugs_monitor <- "p"
+bugs_monitor <- "mu"
 
 if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
   WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
@@ -58,31 +71,41 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 ## Nimble Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+sigma <- 2 # normal sigma
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, sigma))
 nimble_data <- list(
   "y" = y
 )
+nimble_constants <- list(
+  "tau" = 1 / sigma ^2,
+  "N" = n
+)
 nimble_model <- nimbleCode({
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu, 1 / tau)
+  }
+  mu ~ dnorm(0,1)
 })
-nimble_monitor = c("p")
+nimble_monitor = c("mu")
 nimble_inits <- list(
-  "p" = rbeta(1,1,1)
+  "mu" = rnorm(1,0,1)
 )
 
 ## STAN Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # binomial n
+p <- .25 # binomial p
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rbinom(1, n, p))
 stan_data <- list(
+  "n" = n,
   "y" = y
 )
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("simple models", "continuous", "normal", "normal-prior", "normal-normal.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -110,7 +133,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -127,9 +150,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
-file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli1.rds"))
+rds_file_location <- here("simple models", "continuous", "normal", "normal-prior")
+file.rename(paste0(rds_file_location, "/normal-normal.rds"), 
+            paste0(rds_file_location, "/normal-normal1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -143,7 +166,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -160,5 +183,6 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli.rds"))
+file.rename(paste0(rds_file_location, "/normal-normal1.rds"), 
+            paste0(rds_file_location, "/normal-normal.rds"))
+

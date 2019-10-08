@@ -14,36 +14,59 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(x <- rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
 jags_data <- list(
-  "y" = y
+  "n" = n,
+  "y" = y, 
+  "x" = x
 )
 jags_model <- "
   model{
-    y ~ dbern(p)
-    p ~ dbeta(1,1)
+    for (i in 1:n) {
+      logit(theta[i]) <- alpha + beta * x[i]
+      y[i] ~ dbern(theta[i])
+    }
+    alpha ~ dnorm(0,(1 / 1000^2))
+    beta ~ dnorm(0,(1 / 1000^2))
   }
 "
-jags_monitor <- c("p")
+jags_monitor <- c("alpha", "beta")
 
 ## BUGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(x <- rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
 bugs_data <- list(
-  "y" = y
+  "n" = n,
+  "y" = y, 
+  "x" = x, 
+  "tau" = (1 / 1000)^2
 )
 bugs_model <- function() {
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:n) {
+    logit(theta[i]) <- alpha + beta * x[i]
+    y[i] ~ dbern(theta[i])
+  }
+  alpha ~ dnorm(0,tau)
+  beta ~ dnorm(0,tau)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-bugs_monitor <- "p"
+bugs_monitor <- c("alpha", "beta")
 
 if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
   WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
@@ -55,34 +78,55 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
   OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
 }
 
+
 ## Nimble Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(x <- rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
 nimble_data <- list(
-  "y" = y
+  "n" = n,
+  "y" = y, 
+  "x" = x,
 )
 nimble_model <- nimbleCode({
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:n) {
+    logit(theta[i]) <- alpha + beta * x[i]
+    y[i] ~ dbern(theta[i])
+  }
+  alpha ~ dnorm(0,(1 / 1000^2))
+  beta ~ dnorm(0,(1 / 1000^2))
 })
-nimble_monitor = c("p")
+nimble_monitor = c("alpha", "beta")
 nimble_inits <- list(
-  "p" = rbeta(1,1,1)
+  "alpha" = rnorm(1,0,(1 / 1000^2)),
+  "beta" = rnorm(1,0,(1 / 1000^2))
 )
+
 
 ## STAN Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(x <- rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
 stan_data <- list(
-  "y" = y
+  "n" = n,
+  "y" = y, 
+  "x" = x
 )
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("regression-models", "logistic-regression", "logistic-regression.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -127,9 +171,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
-file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli1.rds"))
+rds_file_location <- here("simple models", "continuous", "exponential", "gamma-prior")
+file.rename(paste0(rds_file_location, "/exponential-gamma.rds"), 
+            paste0(rds_file_location, "/exponential-gamma1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -160,5 +204,5 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli.rds"))
+file.rename(paste0(rds_file_location, "/exponential-gamma1.rds"), 
+            paste0(rds_file_location, "/exponential-gamma.rds"))

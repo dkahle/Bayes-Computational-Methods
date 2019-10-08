@@ -14,15 +14,17 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+p <- .25 # binomial p
+n <-  10 # binomial n
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rbinom(1, n, p))
 jags_data <- list(
-  "y" = y
+  "y" = y,
+  "n" = n
 )
 jags_model <- "
   model{
-    y ~ dbern(p)
+    y ~ dbin(p,n)
     p ~ dbeta(1,1)
   }
 "
@@ -31,14 +33,16 @@ jags_monitor <- c("p")
 ## BUGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+p <- .25 # binomial p
+n <-  10 # binomial n
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rbinom(1, n, p))
 bugs_data <- list(
-  "y" = y
+  "y" = y,
+  "N" = n
 )
 bugs_model <- function() {
-  y ~ dbin(p,1)
+  y ~ dbin(p,N)
   p ~ dbeta(1,1)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
@@ -58,14 +62,16 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 ## Nimble Code
 ################################################################################
 
-p <- .25 # bernoulli p
+p <- .25 # binomial p
+n <-  10 # binomial n
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rbinom(1, n, p))
 nimble_data <- list(
-  "y" = y
+  "y" = y,
+  "n" = n
 )
 nimble_model <- nimbleCode({
-  y ~ dbin(p,1)
+  y ~ dbin(p,n)
   p ~ dbeta(1,1)
 })
 nimble_monitor = c("p")
@@ -76,13 +82,15 @@ nimble_inits <- list(
 ## STAN Code
 ################################################################################
 
-p <- .25 # bernoulli p
+n <- 10L # binomial n
+p <- .25 # binomial p
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rbinom(1, n, p))
 stan_data <- list(
+  "n" = n,
   "y" = y
 )
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -127,9 +135,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
-file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli1.rds"))
+rds_file_location <- here("simple models", "discrete", "binomial", "beta-prior")
+file.rename(paste0(rds_file_location, "/beta-binomial.rds"), 
+            paste0(rds_file_location, "/beta-binomial1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -160,5 +168,5 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli.rds"))
+file.rename(paste0(rds_file_location, "/beta-binomial1.rds"), 
+            paste0(rds_file_location, "/beta-binomial.rds"))

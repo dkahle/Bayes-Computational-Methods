@@ -14,36 +14,48 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+tau <- 1/2 # normal tau
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, 1 / sqrt(tau)))
 jags_data <- list(
-  "y" = y
+  "y" = y,
+  "mu" = mu,
+  "N" = n
 )
 jags_model <- "
   model{
-    y ~ dbern(p)
-    p ~ dbeta(1,1)
+    for (i in 1:N) {
+      y[i] ~ dnorm(mu, tau)
+    }
+    tau ~ dgamma(1, 3)
   }
 "
-jags_monitor <- c("p")
+jags_monitor <- c("tau")
 
 ## BUGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+tau <- 1/2 # normal tau
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, 1 / sqrt(tau)))
 bugs_data <- list(
-  "y" = y
+  "y" = y,
+  "mu" = mu,
+  "N" = n
 )
 bugs_model <- function() {
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu, tau)
+  }
+  tau ~ dgamma(1,3)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-bugs_monitor <- "p"
+bugs_monitor <- c("tau")
 
 if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
   WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
@@ -58,31 +70,44 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 ## Nimble Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+tau <- 1/2 # normal tau
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, sigma))
 nimble_data <- list(
   "y" = y
 )
-nimble_model <- nimbleCode({
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
-})
-nimble_monitor = c("p")
-nimble_inits <- list(
-  "p" = rbeta(1,1,1)
+nimble_constants <- list(
+  "mu" = mu,
+  "N" = n
 )
+nimble_model <- nimbleCode({
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu, 1 / tau)
+  }
+  tau ~ dgamma(1,3)
+})
+nimble_monitor = c("tau")
+nimble_inits <- list(
+  "tau" = rgamma(1,1,3)
+)
+
 
 ## STAN Code
 ################################################################################
 
-p <- .25 # bernoulli p
+mu <- 1    # normal mu
+tau <- 1/2 # normal tau
+n <- 10    # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rnorm(n, mu, 1 / sqrt(tau)))
 stan_data <- list(
-  "y" = y
+  "y" = y,
+  "mu" = mu,
+  "N" = n
 )
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -110,7 +135,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -127,9 +152,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
-file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli1.rds"))
+rds_file_location <- here("simple models", "continuous", "normal", "gamma-prior-tau")
+file.rename(paste0(rds_file_location, "/normal-gamma-tau.rds"), 
+            paste0(rds_file_location, "/normal-gamma-tau1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -143,7 +168,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -160,5 +185,5 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli.rds"))
+file.rename(paste0(rds_file_location, "/normal-gamma-tau1.rds"), 
+            paste0(rds_file_location, "/normal-gamma-tau.rds"))

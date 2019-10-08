@@ -14,36 +14,44 @@ library("rstan");
 ## JAGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+lambda <- 1/2 # exponential lambda
+n <- 10       # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rexp(n, lambda))
 jags_data <- list(
-  "y" = y
+  "y" = y,
+  "N" = n
 )
 jags_model <- "
   model{
-    y ~ dbern(p)
-    p ~ dbeta(1,1)
+    for (i in 1:N) {
+      y[i] ~ dexp(lambda)
+    }
+    lambda ~ dgamma(1,1)
   }
 "
-jags_monitor <- c("p")
+jags_monitor <- c("lambda")
 
 ## BUGS Code
 ################################################################################
 
-p <- .25 # bernoulli p
+lambda <- 1/2 # exponential lambda
+n <- 10       # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rexp(n, lambda))
 bugs_data <- list(
-  "y" = y
+  "y" = y,
+  "N" = n
 )
 bugs_model <- function() {
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
+  for (i in 1:N) {
+    y[i] ~ dexp(lambda)
+  }
+  lambda ~ dgamma(1,1)
 }
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-bugs_monitor <- "p"
+bugs_monitor <- "lambda"
 
 if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
   WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
@@ -55,34 +63,44 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
   OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
 }
 
+
 ## Nimble Code
 ################################################################################
 
-p <- .25 # bernoulli p
+lambda <- 1/2 # exponential lambda
+n <- 10       # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rexp(n, lambda))
 nimble_data <- list(
   "y" = y
 )
-nimble_model <- nimbleCode({
-  y ~ dbin(p,1)
-  p ~ dbeta(1,1)
-})
-nimble_monitor = c("p")
-nimble_inits <- list(
-  "p" = rbeta(1,1,1)
+nimble_constants <- list(
+  "N" = n
 )
+nimble_model <- nimbleCode({
+  for (i in 1:N) {
+    y[i] ~ dexp(lambda)
+  }
+  lambda ~ dgamma(1,1)
+})
+nimble_monitor = c("lambda")
+nimble_inits <- list(
+  "lambda" = rgamma(1,1,1)
+)
+
 
 ## STAN Code
 ################################################################################
 
-p <- .25 # bernoulli p
+lambda <- 1/2 # exponential lambda
+n <- 10       # sample size
 set.seed(1)
-(y <- rbinom(1, 1, p))
+(y <- rexp(n, lambda))
 stan_data <- list(
-  "y" = y
+  "y" = y,
+  "N" = n
 )
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("simple models", "continuous", "exponential", "gamma-prior", "exponential-gamma.stan")
 # file.show(stan_file)
 
 ## Set Parameters
@@ -110,7 +128,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -127,9 +145,9 @@ bench_results <- mark(
 bench_results
 
 ## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior")
-file.rename(paste0(rds_file_location, "/beta-bernoulli.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli1.rds"))
+rds_file_location <- here("simple models", "continuous", "exponential", "gamma-prior")
+file.rename(paste0(rds_file_location, "/exponential-gamma.rds"), 
+            paste0(rds_file_location, "/exponential-gamma1.rds"))
 
 bench_results <- mark(
   "jags_fit" = run.jags(
@@ -143,7 +161,7 @@ bench_results <- mark(
     "useWINE" = T
   ),
   "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   ), 
@@ -160,5 +178,5 @@ bench_results <- mark(
 bench_results
 
 ## Rename back to original name
-file.rename(paste0(rds_file_location, "/beta-bernoulli1.rds"), 
-            paste0(rds_file_location, "/beta-bernoulli.rds"))
+file.rename(paste0(rds_file_location, "/exponential-gamma1.rds"), 
+            paste0(rds_file_location, "/exponential-gamma.rds"))
