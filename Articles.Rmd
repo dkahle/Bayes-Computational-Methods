@@ -1,5 +1,5 @@
 ---
-title: "Existing Articles"
+title: "Progress Documentation"
 output: pdf_document
 ---
 
@@ -9,4 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Existing Articles on Comparing Bayes Computation Methods
 
-http://www.stat.columbia.edu/~gelman/research/published/stan_jebs_2.pdf - Article by Gelman on Introduction to STAN, includes comparisons to JAGS, BUGS, 
+http://www.stat.columbia.edu/~gelman/research/published/stan_jebs_2.pdf - Article by Gelman on Introduction to STAN, includes comparisons to JAGS, BUGS.
+
+https://discourse.mc-stan.org/t/how-to-compare-different-algorithms-for-bayesian-inference-in-terms-of-speed-and-subject-to-effectiveness/3274
+

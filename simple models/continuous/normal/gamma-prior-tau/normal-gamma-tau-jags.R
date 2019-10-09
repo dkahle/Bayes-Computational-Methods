@@ -17,7 +17,7 @@ n <- 10    # sample size
 
 set.seed(1)
 
-(y <- rnorm(n, mu, sigma))
+(y <- rnorm(n, mu, 1 / sqrt(tau)))
 
 jags_data <- list(
   "y" = y,

@@ -24,12 +24,12 @@ nimble_data <- list(
 )
 
 nimble_constants <- list(
-  "mu" = mu
+  "mu" = mu,
   "N" = n
 )
 
 
-## specify jags model
+## specify nimble model
 ################################################################################
 
 nimble_model <- nimbleCode({

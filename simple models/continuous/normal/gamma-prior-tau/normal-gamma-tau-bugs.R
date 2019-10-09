@@ -46,13 +46,15 @@ monitor <- c("tau")
 ## Specify path to WINE if using WINE 
 ###################################################################################
 
-# WINE="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/wine"
-# WINEPATH="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/winepath"
-# OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
-WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
-WINEPATH="/usr/local/Cellar/wine/4.0.1/bin/winepath"
-OpenBUGS.pgm="/Users/evanmiyakawa/OpenBugs/OpenBUGS323/OpenBUGS.exe" #~
-
+if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
+  WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
+  WINEPATH="/usr/local/Cellar/wine/4.0.1/bin/winepath"
+  OpenBUGS.pgm="/Users/evanmiyakawa/OpenBugs/OpenBUGS323/OpenBUGS.exe" #~
+} else {
+  WINE="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/wine"
+  WINEPATH="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/winepath"
+  OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
+}
 
 
 

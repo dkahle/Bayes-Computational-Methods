@@ -27,7 +27,7 @@ nimble_constants <- list(
 )
 
 
-## specify jags model
+## specify nimble model
 ################################################################################
 
 nimble_model <- nimbleCode({
