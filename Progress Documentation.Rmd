@@ -9,5 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \begin{itemize}
   \item 10 / 08 / 2019: Nimble crashes my Mac laptop every now and then, so I should do more simulation with that.
+  \item 10 / 09 / 2019: Meeting with Dr. Kahle. I want to look into getting the WINE path set globally instead of specifying it each time. I also have been dealing with the problem of getting STAN compile time included or not included in the benchmark file. Currently I'm having two function calls to "mark", one that uses saved rds file and has STAN already compiled, and one that renames the rds file to force recompile. I could instead try to split STAN up into the compile function and the run function.
+  \item 10 / 09 / 2019: I am interested not just in time it takes for each model to run, but also the accuracy of each model. For models that can be calculated analytically, I can look at the MSE of each method in their posterior means compared to the true posterior mean. For those where I can't calculate analytically, I can run STAN for a super long time and get the posterior mean, and maybe check it with a Gibbs sampler as well, and that will be my "true" posterior mean when calculating the MSEs for each method in that model setup.
 \end{itemize}
 
