@@ -94,111 +94,16 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 1 # Number of times you want to benchmark each model
+num_iterations <- 1 # Number of times you want to benchmark each model\
 
-## This version doesn't include STAN compile time
+rds_file_location <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
 
-mod <- stan_model("file" = stan_file)
-r <- sampling(mod, "data" = stan_data,
-         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup)
+source(here("benchmark-function.R"))
 
-
-stan(
-  "file" = stan_file, "data" = stan_data,
-  "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-)
-
-sampling(mod, "data" = stan_data,
-         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup)
+# choose to include stan compilation time with argument "stan_compile = TRUE"
+run_benchmark(rds_file_location)
+run_benchmark(rds_file_location, stan_compile = TRUE)
 
 
-bench_results <- mark(
-  "jags_fit" = run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor,
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-  ), 
-  "bugs_fit" = bugs(
-    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor,
-    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
-    "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
-  ),
-  "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-  ), 
-  "stan_fit" = stan(
-    "file" = stan_file, "data" = stan_data,
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-  ),
-  "check" = FALSE, 
-  "iterations" = num_iterations, 
-  "filter_gc" = FALSE
-  
-)
 
-bench_results <- mark(
-  "jags_fit" = run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor,
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-  ), 
-  "bugs_fit" = bugs(
-    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor,
-    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
-    "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
-  ),
-  "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-  ), 
-  "stan_compile" = stan_model("file" = stan_file
-  ),
-  "stan_sample" = sampling(stan_compile, "data" = stan_data,
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-  ),
-  "check" = FALSE, 
-  "iterations" = num_iterations, 
-  "filter_gc" = FALSE
-)
 
-bench_results
-
-## Include STAN compile time - rename stored compile file to force recompile
-rds_file_location <- here("simple models", "discrete", "poisson", "gamma-prior")
-file.rename(paste0(rds_file_location, "/poisson-gamma.rds"), 
-            paste0(rds_file_location, "/poisson-gamma1.rds"))
-
-bench_results <- mark(
-  "jags_fit" = run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor,
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-  ), 
-  "bugs_fit" = bugs(
-    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor,
-    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
-    "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
-  ),
-  "nimble_fit" = nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data,
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-  ), 
-  "stan_fit" = stan(
-    "file" = stan_file, "data" = stan_data,
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-  ),
-  "check" = FALSE, 
-  "iterations" = 1, 
-  "filter_gc" = FALSE
-  
-)
-
-bench_results
-
-## Rename back to original name
-file.rename(paste0(rds_file_location, "/poisson-gamma1.rds"), 
-            paste0(rds_file_location, "/poisson-gamma.rds"))
