@@ -1,4 +1,3 @@
-library(stringr)
 run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
   if (!stan_compile) {
     bench_results <- mark(
