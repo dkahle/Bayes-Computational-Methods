@@ -12,7 +12,7 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "useWINE" = T
       ),
       "nimble_fit" = nimbleMCMC(
-        "code" = nimble_model, "data" = nimble_data,
+        "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
         "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
         "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
       ), 
@@ -53,7 +53,7 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "useWINE" = T
       ),
       "nimble_fit" = nimbleMCMC(
-        "code" = nimble_model, "data" = nimble_data,
+        "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
         "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
         "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
       ), 

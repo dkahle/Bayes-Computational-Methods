@@ -29,14 +29,13 @@ nimble_data <- list(
 ################################################################################
 
 nimble_model <- nimbleCode({
-  y ~ dbin(p,n)
-  p ~ dbeta(1,1)
+  y ~ dbin(theta,n)
+  theta ~ dbeta(1,1)
 })
 
-monitors = c("p")
+nimble_monitor = c("theta")
 
-
-## fit model
+## configure model settings
 ################################################################################
 
 n_chains <- 4L
@@ -44,42 +43,33 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "p" = rbeta(1,1,1)
-)
-
-nimble_fit <- nimbleMCMC(
-  "code" = nimble_model, "data" = nimble_data, "inits" = nimble_inits, 
-  "monitors" = monitors, "nchains" = n_chains, "niter" = n_iter, 
-  "nburnin" = n_warmup, "summary" = TRUE
+  "theta" = rgamma(1,3,1)
 )
 
 
-## assess fit
+## fit model
 ################################################################################
-
-nimble_fit$summary$all.chains
-
-str(nimble_fit$samples)
-str(nimble_fit$samples %>% as.array())
-
-## assess convergence issues 
-###################################################################################
-
-
-
-
-## benchmarking
-###################################################################################
-
-bench_results <- mark(
+if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+  
   nimble_fit <- nimbleMCMC(
     "code" = nimble_model, "data" = nimble_data, 
-    "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-  ),
-  iterations = 3
-)
-bench_results[1,2:9]
+  )
+  
+  
+  ## assess fit
+  ################################################################################
+  
+  nimble_fit$summary$all.chains
+  
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+}  
+
 
 
 
