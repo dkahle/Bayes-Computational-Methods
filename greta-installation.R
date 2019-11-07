@@ -8,6 +8,8 @@ remove.packages("greta")
 remove.packages("tensorflow")
 devtools::install_github("greta-dev/greta")
 
+install.packages("greta")
+
 library("greta")
 install_tensorflow(
   version = "1.14.0",

@@ -11,33 +11,31 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # binomial p
+n <-  10 # binomial n
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(y <- rbinom(1, n, p))
 y <- as_data(y)
-
-# 
-# jags_data <- list(
-#   "y" = y
-# )
+n <- as_data(n)
 
 
 ## specify greta model
 ################################################################################
 
-theta <- gamma(3,1)
-distribution(y) <- poisson(theta)
+p <- beta(1,1)
 
-greta_model <- model(theta)
+distribution(y) <- binomial(n,p)
+
+greta_model <- model(p)
 
 plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4
+n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
@@ -48,8 +46,10 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   
   
   greta_fit <- mcmc(
-    "model" = greta_model, "n_samples" = n_iter,
-    "warmup" = n_warmup, "chains" = n_chains
+    "model" = greta_model, 
+    "n_samples" = n_iter,
+    "warmup" = n_warmup,
+    "chains" = n_chains
   )
   
   
