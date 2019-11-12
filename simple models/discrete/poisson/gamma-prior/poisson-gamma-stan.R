@@ -28,61 +28,52 @@ stan_data <- list(
 
 # read it in from file
 stan_file <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.stan")
-file.show(stan_file)
+
+# file.show(stan_file)
 
 
 
-## fit model
+## configure model settings
 ################################################################################
 
 n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
-stan_fit <- stan(
-  "file" = stan_file, "data" = stan_data, 
-  "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-)
 
-
-
-
-## assess fit
+## fit model
 ################################################################################
+if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
 
-summary(stan_fit)$summary
-get_posterior_mean(stan_fit)
-stan_dens(stan_fit) + theme_bw()
-stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
-
-
-
-## assess convergence issues 
-###################################################################################
-
-stan_fit %>% as.array() %>% mcmc_acf_bar()
-stan_fit %>% as.array() %>% mcmc_pairs()
-stan_fit %>% as.array() %>% mcmc_trace()
-
-# see each chain
-stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
-
-
-## benchmarking
-###################################################################################
-
-
-bench_results <- mark(
-  "stan_fit" = stan(
-    "file" = stan_file, "data" = stan_data,
+  stan_fit <- stan(
+    "file" = stan_file, "data" = stan_data, 
     "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-  ), 
-  filter_gc = FALSE
-)
-bench_results[1,2:9]
-bench_results
-
-
+  )
+  
+  
+  
+  
+  ## assess fit
+  ################################################################################
+  
+  summary(stan_fit)$summary
+  get_posterior_mean(stan_fit)
+  stan_dens(stan_fit) + theme_bw()
+  stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
+  
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+  stan_fit %>% as.array() %>% mcmc_acf_bar()
+  stan_fit %>% as.array() %>% mcmc_pairs()
+  stan_fit %>% as.array() %>% mcmc_trace()
+  
+  # see each chain
+  stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
+  
+}
 
 
 

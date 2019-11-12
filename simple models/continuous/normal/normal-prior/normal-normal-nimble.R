@@ -38,7 +38,7 @@ nimble_model <- nimbleCode({
   }
   mu ~ dnorm(0,1)
 })
-monitors = c("mu")
+nimble_monitor = c("mu")
 
 
 ## fit model
@@ -54,7 +54,7 @@ nimble_inits <- list(
 
 nimble_fit <- nimbleMCMC(
   "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
-  "inits" = nimble_inits, "monitors" = monitors, "nchains" = n_chains, 
+  "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
   "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
 )
 
