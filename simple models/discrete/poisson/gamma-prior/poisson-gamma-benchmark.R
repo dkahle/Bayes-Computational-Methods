@@ -9,81 +9,19 @@ library("rjags"); library("runjags")
 library("R2OpenBUGS")
 library("nimble")
 library("rstan"); rstan_options(auto_write = FALSE)
+library("greta")
+options("bayes_benchmark" = TRUE)
 
-
-## JAGS Code
+## Source code
 ################################################################################
 
-theta <- 5 # poisson theta
-set.seed(1)
-(y <- rpois(1, theta))
-jags_data <- list(
-  "y" = y
-)
-jags_model <- "
-  model{
-    y ~ dpois(theta)
-    theta ~ dgamma(3,1)
-  }
-"
-jags_monitor <- c("theta")
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-jags.R"))
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
 
-## BUGS Code
-################################################################################
-
-theta <- 5 # poisson theta
-set.seed(1)
-(y <- rpois(1, theta))
-bugs_data <- list(
-  "y" = y
-)
-bugs_model <- function() {
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
-}
-bugs.file <- file.path(tempdir(), "model.txt")
-write.model(bugs_model, bugs.file)
-bugs_monitor <- "theta"
-
-if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
-  WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
-  WINEPATH="/usr/local/Cellar/wine/4.0.1/bin/winepath"
-  OpenBUGS.pgm="/Users/evanmiyakawa/OpenBugs/OpenBUGS323/OpenBUGS.exe" #~
-} else {
-  WINE="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/wine"
-  WINEPATH="/Users/evan_miyakawa1/Cellar/wine/4.0.1/bin/winepath"
-  OpenBUGS.pgm="/Users/evan_miyakawa1/OpenBugs/OpenBUGS323/OpenBUGS.exe"
-}
-## Nimble Code
-################################################################################
-
-theta <- 5 # poisson theta
-set.seed(1)
-(y <- rpois(1, theta))
-nimble_data <- list(
-  "y" = y
-)
-nimble_model <- nimbleCode({
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
-})
-nimble_monitor <- c("theta")
-nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
-)
-
-## STAN Code
-################################################################################
-
-theta <- 5 # poisson theta
-set.seed(1)
-(y <- rpois(1, theta))
-stan_data <- list(
-  "theta" = theta,
-  "y" = y
-)
-stan_file <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.stan")
-# file.show(stan_file)
+options("bayes_benchmark" = FALSE)
 
 ## Set Parameters
 ################################################################################
@@ -105,5 +43,16 @@ run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
 
 
+
+bench_results <- mark(
+  mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
+  ),
+  "check" = FALSE, 
+  "iterations" = num_iterations, 
+  "filter_gc" = FALSE
+  
+)
 
 

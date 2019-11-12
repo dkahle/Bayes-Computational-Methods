@@ -37,7 +37,7 @@ bugs_model <- function() {
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
 
-monitor <- "p"
+bugs_monitor <- "p"
 
 
 ## Specify path to WINE if using WINE 
@@ -54,8 +54,7 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 }
 
 
-
-## fit model
+## configure model settings
 ################################################################################
 
 n_chains <- 4L
@@ -63,38 +62,26 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 
-bugs_fit <- bugs(
-  "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = monitor, 
-  "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
-  "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-  "useWINE" = T
-)
-
-
-
-## assess fit
+## fit model
 ################################################################################
-
-bugs_fit$summary
-
-
-## assess convergence issues 
-###################################################################################
-
-
-
-## benchmarking
-###################################################################################
-
-bench_results <- mark(
+if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
   bugs_fit <- bugs(
-    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = monitor, 
+    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
     "useWINE" = T
-  ),
-  iterations = 3
-)
-bench_results[1,2:9]
-
+  )
+  
+  
+  
+  ## assess fit
+  ################################################################################
+  
+  bugs_fit$summary
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+}
 
