@@ -3,77 +3,61 @@
 
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("nimble")
+library("greta")
+library("bayesplot")
 library("bench")
-
 
 
 ## generate/specify data
 ################################################################################
 
-mu <- 1    # normal mu
-sigma <- 2 # normal sigma
-n <- 10    # sample size
+theta <- 5 # poisson theta
 
 set.seed(1)
 
-(y <- rnorm(n, mu, sigma))
+(y <- rpois(1, theta))
+y <- as_data(y)
 
-nimble_data <- list(
-  "y" = y
-)
-
-nimble_constants <- list(
-  "tau" = 1 / sigma ^2,
-  "N" = n
-)
+# 
+# jags_data <- list(
+#   "y" = y
+# )
 
 
-## specify nimble model
+## specify greta model
 ################################################################################
 
-nimble_model <- nimbleCode({
-  for (i in 1:N) {
-    y[i] ~ dnorm(mu, 1 / tau)
-  }
-  mu ~ dnorm(0,1)
-})
-nimble_monitor = c("mu")
+theta <- gamma(3,1)
+distribution(y) <- poisson(theta)
 
+greta_model <- model(theta)
+
+plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
-
-nimble_inits <- list(
-  "mu" = rnorm(1)
-)
 
 
 ## fit model
 ################################################################################
 if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
   
-  nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  
+  greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
   )
+  
   
   
   ## assess fit
   ################################################################################
   
-  nimble_fit$summary$all.chains
+  summary(greta_fit)
   
-  
-  
-  ## assess convergence issues 
-  ###################################################################################
-  
-}  
-
+}
 

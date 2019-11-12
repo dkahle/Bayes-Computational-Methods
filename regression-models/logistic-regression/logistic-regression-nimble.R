@@ -29,6 +29,8 @@ nimble_data <- list(
   "x" = x,
 )
 
+nimble_constants <- list()
+
 
 
 
@@ -55,7 +57,9 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
+
+  "alpha" = rnorm(1,0,1000),
+  "beta" = rnorm(1,0,1000)
 )
 
 
@@ -64,8 +68,9 @@ nimble_inits <- list(
 if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
   
   nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, 
-    "inits" = nimble_inits, "monitors" = nimble_monitors, "nchains" = n_chains, 
+
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
   

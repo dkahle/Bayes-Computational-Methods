@@ -9,6 +9,7 @@ library("rjags"); library("runjags")
 library("R2OpenBUGS")
 library("nimble")
 library("rstan"); rstan_options(auto_write = FALSE)
+library("greta")
 options("bayes_benchmark" = TRUE)
 
 ## Source code
@@ -18,6 +19,7 @@ source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamm
 source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
 source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
 source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
+source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -41,5 +43,16 @@ run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
 
 
+
+bench_results <- mark(
+  mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
+  ),
+  "check" = FALSE, 
+  "iterations" = num_iterations, 
+  "filter_gc" = FALSE
+  
+)
 
 

@@ -21,6 +21,8 @@ nimble_data <- list(
   "y" = y
 )
 
+nimble_constants <- list()
+
 
 ## specify nimble model
 ################################################################################
@@ -50,7 +52,7 @@ nimble_inits <- list(
 if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
 
   nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, 
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitors, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
