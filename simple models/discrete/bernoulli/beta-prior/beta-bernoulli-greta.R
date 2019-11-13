@@ -12,21 +12,21 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+p <- .25 # bernoulli p
 
 set.seed(1)
 
-(y <- as_data(rpois(1, theta)))
+(y <- as_data(rbinom(1, 1, p)))
 
 
 
 ## specify greta model
 ################################################################################
 
-theta <- gamma(3,1)
-distribution(y) <- poisson(theta)
+p <- beta(1,1)
+distribution(y) <- bernoulli(p)
 
-greta_model <- model(theta)
+greta_model <- model(p)
 
 plot(greta_model)
 

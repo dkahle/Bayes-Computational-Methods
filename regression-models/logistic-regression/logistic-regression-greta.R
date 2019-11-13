@@ -12,21 +12,29 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
 
 set.seed(1)
 
-(y <- as_data(rpois(1, theta)))
+x <- (rnorm(n, 5, 1)) # observed x values
+theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
+theta <- exp(theta_0) / (1 + exp(theta_0)) # generated values of bernoulli theta
+y <- (rbinom(n,1,theta))
+
+x <- as_data(x)
+y <- as_data(y)
 
 
 
 ## specify greta model
 ################################################################################
 
-theta <- gamma(3,1)
-distribution(y) <- poisson(theta)
+p <- beta(1,1)
+distribution(y) <- bernoulli(p)
 
-greta_model <- model(theta)
+greta_model <- model(p)
 
 plot(greta_model)
 
