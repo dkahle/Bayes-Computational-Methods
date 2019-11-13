@@ -3,73 +3,61 @@
 
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("nimble")
+library("greta")
+library("bayesplot")
 library("bench")
-
+library("here")
 
 
 ## generate/specify data
 ################################################################################
 
-p <- .25 # binomial p
-n <-  10 # binomial n
+p <- .25 # bernoulli p
 
 set.seed(1)
 
-(y <- rbinom(1, n, p))
-
-nimble_data <- list(
-  "y" = y,
-  "n" = n
-)
+(y <- as_data(rbinom(1, 1, p)))
 
 
 
-## specify nimble model
+## specify greta model
 ################################################################################
 
-nimble_model <- nimbleCode({
-  y ~ dbin(theta,n)
-  theta ~ dbeta(1,1)
-})
+p <- beta(1,1)
+distribution(y) <- bernoulli(p)
 
-nimble_monitor = c("theta")
+greta_model <- model(p)
+
+plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
-nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
-)
 
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
-  nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, 
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  
+  greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
   )
+  
   
   
   ## assess fit
   ################################################################################
   
-  nimble_fit$summary$all.chains
+  summary(greta_fit)
   
-  
-  
-  ## assess convergence issues 
-  ###################################################################################
-  
-}  
-
-
-
+}
 
