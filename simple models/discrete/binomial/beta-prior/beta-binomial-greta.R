@@ -6,6 +6,7 @@ library("parallel"); options(mc.cores = detectCores())
 library("greta")
 library("bayesplot")
 library("bench")
+library("here")
 
 
 ## generate/specify data
@@ -42,7 +43,9 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
   
   greta_fit <- mcmc(
