@@ -6,6 +6,7 @@ library("parallel"); options(mc.cores = detectCores())
 library("rjags"); library("runjags")
 library("bayesplot")
 library("bench")
+library("here")
 
 
 
@@ -44,9 +45,12 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 
+
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
   
   jags_fit <- run.jags(
@@ -66,7 +70,7 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   dimnames(jags_fit_object) <- list(
     "iterations" = NULL, 
     "chains" = 1:n_chains, 
-    "parameters" = monitor
+    "parameters" = jags_monitor
   )
   
   
