@@ -3,7 +3,7 @@
 
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("rjags"); library("runjags")
+library("nimble")
 library("bench")
 
 
@@ -11,34 +11,41 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-mu <- 1    # normal mu
-sigma <- 2 # normal sigma
-n <- 10    # sample size
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
+sigma <- 3 # standard deviation
 
 set.seed(1)
 
-(y <- rnorm(n, mu, sigma))
+(x <- rnorm(n, 5, 4)) # observed x values
+y_hat <- alpha + beta * x
+(y <- rnorm(n,y_hat,sigma))
 
-jags_data <- list(
-  "y" = y,
-  "tau" = 1 / sigma ^2,
+nimble_data <- list(
+  "y" = y, 
+  "x" = x
+)
+
+nimble_constants <- list(
   "N" = n
 )
 
 
-## specify jags model
+## specify nimble model
 ################################################################################
 
-jags_model <- "
-  model{
-    for (i in 1:N) {
-      y[i] ~ dnorm(mu, 1 / tau)
-    }
-    mu ~ dnorm(0, 1)
+nimble_model <- nimbleCode({
+  for (i in 1:N) {
+    y_hat[i] <- alpha + beta * x[i]
+    y[i] ~ dnorm(y_hat[i], tau)
   }
-"
-
-jags_monitor <- c("mu")
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
+  tau ~ T(dnorm(0,0.0001), 0,)
+  sigma <- sqrt(1 / tau)
+})
+nimble_monitor = c("alpha", "beta", "sigma")
 
 
 ## configure model settings
@@ -48,6 +55,12 @@ n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
+nimble_inits <- list(
+  "alpha" = rnorm(1,0,1000),
+  "beta" = rnorm(1,0,1000),
+  "tau" = 1 / (abs(rnorm(1,0,1000)) ^ 2)
+)
+
 
 ## fit model
 ################################################################################
@@ -55,39 +68,23 @@ source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   
-  
-  jags_fit <- run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor, 
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-  ) 
-  
+  nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  )
   
   
   ## assess fit
   ################################################################################
   
-  jags_fit
+  nimble_fit$summary$all.chains
   
-  jags_fit_object <- jags_fit$mcmc %>% as.array()
-  dim(jags_fit_object) <- c(dim(jags_fit_object), 1)
-  dimnames(jags_fit_object) <- list(
-    "iterations" = NULL, 
-    "chains" = 1:n_chains, 
-    "parameters" = monitor
-  )
-  
-  
-  jags_fit_object %>% bayesplot::mcmc_dens()
   
   
   ## assess convergence issues 
   ###################################################################################
   
-  jags_fit_object %>% mcmc_acf_bar()
-  jags_fit_object %>% mcmc_trace()
-  
-  
-  
-  
-}
+}  
+
 

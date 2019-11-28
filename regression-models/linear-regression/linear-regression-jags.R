@@ -6,28 +6,29 @@ library("parallel"); options(mc.cores = detectCores())
 library("rjags"); library("runjags")
 library("bayesplot")
 library("bench")
+library("here")
 
 
 
 ## generate/specify data
 ################################################################################
 
-n <- 20L # sample size
-alpha <- 2 # intercept
-beta <- 2 # single coefficient
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
+sigma <- 3 # standard deviation
 
 set.seed(1)
 
-(x <- runif(n, 0, 10)) # observed x values
-lambda <- alpha + beta * x 
-(y <- rpois(n,lambda))
+(x <- rnorm(n, 5, 4)) # observed x values
+y_hat <- alpha + beta * x
+(y <- rnorm(n,y_hat,sigma))
 
 jags_data <- list(
-  "n" = n,
-  "y" = y, 
+  "N" = n,
+  "y" = y,
   "x" = x
 )
-
 
 
 ## specify jags model
@@ -35,16 +36,18 @@ jags_data <- list(
 
 jags_model <- "
   model{
-    for (i in 1:n) {
-      log(lambda[i]) <- alpha + beta * x[i]
-      y[i] ~ dpois(lambda[i])
+    for (i in 1:N) {
+      y_hat[i] <- alpha + beta * x[i]
+      y[i] ~ dnorm(y_hat[i], tau)
     }
-    alpha ~ dnorm(0, 1 / (100 ^ 2))
-    beta ~ dnorm(0, 1 / (100 ^ 2))
+    alpha ~ dnorm(0,0.0001)
+    beta ~ dnorm(0,0.0001)
+    tau ~ dnorm(0,0.0001)  I(0, )
+    sigma <- sqrt(1 / tau)
   }
 "
 
-monitor <- c("alpha", "beta")
+jags_monitor <- c("alpha", "beta", "sigma")
 
 
 ## configure model settings

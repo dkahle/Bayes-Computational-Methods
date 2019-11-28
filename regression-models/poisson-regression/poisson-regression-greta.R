@@ -3,10 +3,10 @@
 
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("rjags"); library("runjags")
+library("greta")
 library("bayesplot")
 library("bench")
-
+library("here")
 
 
 ## generate/specify data
@@ -22,35 +22,29 @@ set.seed(1)
 lambda <- alpha + beta * x 
 (y <- rpois(n,lambda))
 
-jags_data <- list(
-  "n" = n,
-  "y" = y, 
-  "x" = x
-)
+x <- as_data(x)
+y <- as_data(y)
 
 
 
-## specify jags model
+## specify greta model
 ################################################################################
 
-jags_model <- "
-  model{
-    for (i in 1:n) {
-      log(lambda[i]) <- alpha + beta * x[i]
-      y[i] ~ dpois(lambda[i])
-    }
-    alpha ~ dnorm(0, 1 / (100 ^ 2))
-    beta ~ dnorm(0, 1 / (100 ^ 2))
-  }
-"
+alpha <- normal(0, 1000)
+beta <- normal(0, 1000)
 
-monitor <- c("alpha", "beta")
+lambda <- exp(alpha + beta * x)
+# distribution(y) <- poisson(log(alpha + beta * x))
+distribution(y) <- poisson(lambda)
 
+greta_model <- model(alpha, beta, lambda)
+
+plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
@@ -58,43 +52,23 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
+
 source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   
   
-  jags_fit <- run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor, 
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-  ) 
+  greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
+  )
   
   
   
   ## assess fit
   ################################################################################
   
-  jags_fit
-  
-  jags_fit_object <- jags_fit$mcmc %>% as.array()
-  dim(jags_fit_object) <- c(dim(jags_fit_object), 1)
-  dimnames(jags_fit_object) <- list(
-    "iterations" = NULL, 
-    "chains" = 1:n_chains, 
-    "parameters" = jags_monitor
-  )
-  
-  
-  jags_fit_object %>% bayesplot::mcmc_dens()
-  
-  
-  ## assess convergence issues 
-  ###################################################################################
-  
-  jags_fit_object %>% mcmc_acf_bar()
-  jags_fit_object %>% mcmc_trace()
-  
-  
-  
+  summary(greta_fit)
   
 }
 

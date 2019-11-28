@@ -11,14 +11,21 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+n <- 10L # sample size
+alpha <- -5 # intercept
+beta <- 1 # single coefficient
+sigma <- 3 # standard deviation
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(x <- rnorm(n, 5, 4)) # observed x values
+y_hat <- alpha + beta * x
+(y <- rnorm(n,y_hat,sigma))
 
 bugs_data <- list(
-  "y" = y
+  "N" = n,
+  "y" = y,
+  "x" = x
 )
 
 
@@ -26,16 +33,21 @@ bugs_data <- list(
 ################################################################################
 
 bugs_model <- function() {
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  for (i in 1:N) {
+    y_hat[i] <- alpha + beta * x[i]
+    y[i] ~ dnorm(y_hat[i], tau)
+  }
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
+  tau ~ dnorm(0,0.0001) %_% I(0, )
+  sigma <- sqrt(1 / tau)
 }
-
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
 
-bugs_monitor <- "theta"
+bugs_monitor <- c("alpha", "beta", "sigma")
 
 
 ## Specify path to WINE if using WINE 
@@ -62,7 +74,10 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
+  
   bugs_fit <- bugs(
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
@@ -82,5 +97,4 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   ###################################################################################
   
 }
-
 

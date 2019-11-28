@@ -11,14 +11,20 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+n <- 20L # sample size
+alpha <- 2 # intercept
+beta <- 2 # single coefficient
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(x <- runif(n, 0, 10)) # observed x values
+lambda <- alpha + beta * x 
+(y <- rpois(n,lambda))
 
 bugs_data <- list(
-  "y" = y
+  "N" = n,
+  "y" = y,
+  "x" = x
 )
 
 
@@ -26,16 +32,19 @@ bugs_data <- list(
 ################################################################################
 
 bugs_model <- function() {
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  for (i in 1:N) {
+    log(lambda[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(lambda[i])
+  }
+  alpha ~ dnorm(0, 0.0001)
+  beta ~ dnorm(0, 0.0001)
 }
-
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
 
-bugs_monitor <- "theta"
+bugs_monitor <- c("alpha", "beta")
 
 
 ## Specify path to WINE if using WINE 
@@ -56,18 +65,21 @@ if (getwd() == "/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bay
 ################################################################################
 
 n_chains <- 4L
-n_iter <- 1e4L
-n_warmup <- 1e3L
+n_iter <- 1e3L
+n_warmup <- 1e2L
 
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
+  
   bugs_fit <- bugs(
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T, debug = TRUE
+    "useWINE" = T
   )
   
   
@@ -82,5 +94,4 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   ###################################################################################
   
 }
-
 
