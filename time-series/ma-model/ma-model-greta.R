@@ -13,44 +13,52 @@ library("here")
 ################################################################################
 
 N <- 200L # sample size
-alpha <- 0 # ar(1) mean
-beta <- c(-0.6) # ar(1) coefficient
-sigma <- 1 # ar(1) standard deviation
-
+theta <- c(0.7)
+sigma <- 1
 
 set.seed(1)
-(y <- arima.sim(model = list(ar = beta), sd = sigma, n = N) %>% as.numeric())
+(y <- arima.sim(model = list(ma = theta), sd = sigma, n = N) %>% as.numeric())
+
+epsilon <- y * 1.01
 
 t <- 1:length(y)
 ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
 
-y_1 <- y[1:(length(y) - 1)] # data excluding the last point
-z_1 <- y[2:length(y)] # data excluding the first point
+y_1 <- y[1]
+y_2 <- y[2:length(y)]
 
 y <- as_data(y)
-y_1 <- as_data(y_1) # 
-z_1 <- as_data(z_1)
+y_1 <- as_data(y_1) # first element
+y_2 <- as_data(y_2)
 
 
 ## specify greta model
 ################################################################################
 
-alpha <- normal(0,1000)
-beta <- normal(0,1000)
+mu <- normal(0,1000)
+theta <- normal(0,1000)
 sigma <- normal(0,1000, truncation = c(0,Inf))
-distribution(y) <- normal(alpha + beta * y, sigma)
-distribution(z_1) <- normal(alpha + beta * y_1, sigma)
 
-greta_model <- model(alpha, beta, sigma)
+epsilon <- greta_array(dim = c(N,1))
+epsilon[1] <- 0
+epsilon[2] <- y[1] - mu
+for (i in 3:N) {
+  epsilon[i] <- y[i] - mu - theta * epsilon[i-1]
+}
+
+distribution(y) <- normal(mu + theta * epsilon, sigma)
+
+greta_model <- model(mu, theta, sigma)
 
 plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4
-n_iter <- 1e4L
-n_warmup <- 1e3L
+n_chains <- 1
+n_iter <- 5000
+n_warmup <- 2000
+
 
 
 ## fit model
@@ -60,10 +68,13 @@ source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   
+  
   greta_fit <- mcmc(
     "model" = greta_model, "n_samples" = n_iter,
     "warmup" = n_warmup, "chains" = n_chains
   )
+  
+  
   
   ## assess fit
   ################################################################################

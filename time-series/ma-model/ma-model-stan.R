@@ -14,11 +14,11 @@ library("bench")
 ################################################################################
 
 N <- 200L # sample size
-theta <- c(0.7)
+theta <- c(0.6)
 sigma <- 1
 
 set.seed(1)
-(y <- arima.sim(model = list(ma = theta), sd = sigma, n = N)) %>% as.numeric()
+(y <- arima.sim(model = list(ma = theta), sd = sigma, n = N) %>% as.numeric())
 
 t <- 1:length(y)
 ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
@@ -46,6 +46,7 @@ stan_file <- here("time-series", "ma-model", "ma-model.stan")
 n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
+
 
 
 ## fit model

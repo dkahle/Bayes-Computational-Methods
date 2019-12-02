@@ -6,7 +6,7 @@ data {
 parameters {
   real mu;              // mean
   real<lower=0> sigma;  // error scale
-  vector[1] theta;      // lag coefficients
+  real theta;      // lag coefficients
 }
 
 transformed parameters {
@@ -14,15 +14,15 @@ transformed parameters {
   epsilon[1] = y[1] - mu;
   for (t in 2:T)
     epsilon[t] = ( y[t] - mu
-                    - theta[1] * epsilon[t - 1] );
+                    - theta * epsilon[t - 1] );
 }
 
 model {
-  mu ~ cauchy(0, 2.5);
-  theta ~ cauchy(0, 2.5);
-  sigma ~ cauchy(0, 2.5);
+  mu ~ normal(0,1000);
+  theta ~ normal(0,1000);
+  sigma ~ normal(0,1000) T[0,];
   for (t in 2:T)
     y[t] ~ normal(mu
-                  + theta[1] * epsilon[t - 1],
+                  + theta * epsilon[t - 1],
                   sigma);
 }

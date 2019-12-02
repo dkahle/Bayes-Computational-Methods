@@ -14,13 +14,11 @@ library("here")
 ################################################################################
 
 N <- 200L # sample size
-alpha <- 0 # ar(1) mean
-beta <- c(-0.6) # ar(1) coefficient
-sigma <- 1 # ar(1) standard deviation
-
+theta <- c(0.6)
+sigma <- 1
 
 set.seed(1)
-(y <- arima.sim(model = list(ar = beta), sd = sigma, n = N)  %>% as.numeric())
+(y <- arima.sim(model = list(ma = theta), sd = sigma, n = N) %>% as.numeric())
 
 t <- 1:length(y)
 ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
@@ -37,17 +35,19 @@ jags_data <- list(
 
 jags_model <- "
   model{
+    epsilon[1] <- y[1] - mu
     for (i in 2:N) {
-      y[i] ~ dnorm(alpha + beta * y[i-1], tau)
+      epsilon[i] <- y[i] - mu - theta * epsilon[i - 1]
+      y[i] ~ dnorm(mu + theta * epsilon [i - 1], tau)
     }
-    alpha ~ dnorm(0,0.0001)
-    beta ~ dnorm(0,0.0001)
+    mu ~ dnorm(0,0.0001)
+    theta ~ dnorm(0,0.0001)
     tau ~ dnorm(0,0.0001)  I(0, )
     sigma <- sqrt(1 / tau)
   }
 "
 
-jags_monitor <- c("alpha", "beta", "sigma")
+jags_monitor <- c("mu", "theta", "sigma")
 
 
 ## configure model settings
