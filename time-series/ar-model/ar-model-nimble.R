@@ -19,7 +19,7 @@ sigma <- 1 # ar(1) standard deviation
 
 
 set.seed(1)
-(y <- arima.sim(model = list(ar = beta), sd = sigma, n = N)) %>% as.numeric()
+(y <- arima.sim(model = list(ar = beta), sd = sigma, n = N)  %>% as.numeric())
 
 t <- 1:length(y)
 ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
