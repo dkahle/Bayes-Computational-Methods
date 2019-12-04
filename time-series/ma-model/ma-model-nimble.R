@@ -1,12 +1,11 @@
 ## load required packages and set basic options
 ################################################################################
 
-library("here")
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("rstan"); rstan_options(auto_write = TRUE)
-library("bayesplot")
+library("nimble")
 library("bench")
+library("here")
 
 
 
@@ -24,20 +23,32 @@ t <- 1:length(y)
 ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
 
 
-stan_data <- list(
-  "T" = N,
+nimble_data <- list(
   "y" = y
 )
 
+nimble_constants <- list(
+  "N" = N
+)
 
-## specify stan model
+
+## specify nimble model
 ################################################################################
 
-# read it in from file
-stan_file <- here("time-series", "ma-model", "ma-model.stan")
+nimble_model <- nimbleCode({
+  epsilon[1] <- y[1] - mu
+  for (i in 2:N) {
+    epsilon[i] <- y[i] - mu - theta * epsilon[i - 1]
+    y_hat[i] <- mu + theta * epsilon [i - 1]
+    y[i] ~ dnorm(y_hat[i], tau)
+  }
+  mu ~ dnorm(0,0.0001)
+  theta ~ dnorm(0,0.0001)
+  tau ~ T(dnorm(0,0.0001),0,)
+  sigma <- sqrt(1 / tau)
+})
 
-# file.show(stan_file)
-
+nimble_monitor <- c("mu", "theta", "sigma")
 
 
 ## configure model settings
@@ -47,40 +58,35 @@ n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
+nimble_inits <- list(
+  "mu" = rnorm(1,0,1000),
+  "theta" = rnorm(1,0,1000),
+  "tau" = rnorm(1,0,0.001) %>% abs()
+)
 
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
-  stan_fit <- stan(
-    "file" = stan_file, "data" = stan_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
-  
-  
   
   
   ## assess fit
   ################################################################################
   
-  summary(stan_fit)$summary
-  get_posterior_mean(stan_fit)
-  stan_dens(stan_fit) + theme_bw()
-  stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
-  
-  
+  nimble_fit$summary$all.chains
   
   ## assess convergence issues 
   ###################################################################################
   
-  stan_fit %>% as.array() %>% mcmc_acf_bar()
-  stan_fit %>% as.array() %>% mcmc_pairs()
-  stan_fit %>% as.array() %>% mcmc_trace()
-  
-  # see each chain
-  stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
-  
-}
+}  
+
 
 
