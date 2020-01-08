@@ -13,7 +13,7 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-N <- 200L # sample size
+N <- 50 # sample size
 theta <- c(0.6)
 sigma <- 1
 
