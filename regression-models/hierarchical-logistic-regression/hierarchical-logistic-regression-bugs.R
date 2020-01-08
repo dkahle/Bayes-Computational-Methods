@@ -12,31 +12,52 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+n <- 30L # sample size
+d <- 2L
+l <- 2L
+ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
-
-(y <- rpois(1, theta))
+(x <- matrix(rnorm(n * d), nrow = n, byrow = TRUE))
+(y <- rbinom(n, 1, 0.5))
 
 bugs_data <- list(
-  "y" = y
+  "N" = n,
+  "D" = d,
+  "L" = l,
+  "ll" = ll,
+  "y" = y, 
+  "x" = x
 )
+
 
 
 ## specify bugs model
 ################################################################################
 
 bugs_model <- function() {
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  for (d in 1:D) {
+    mu[d] ~ dnorm(0, 0.0001)
+    tau[d] ~ dnorm(0,0.0001) %_% I(0,)
+    for (l in 1:L) {
+      beta[l,d] ~ dnorm(mu[d], tau[d])
+    }
+  }
+  for (n in 1:N) {
+    for (d in 1:D) {
+      temp[n,d] <- x[n,d] * beta[ll[n],d]
+    }
+    temp_sum[n] <- temp[n,1] + temp[n,2] 
+    logit(theta[n]) <- temp_sum[n]
+    y[n] ~ dbern(theta[n])
+  }
 }
-
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
 
-bugs_monitor <- "theta"
+bugs_monitor <- c("mu", "beta", "theta", "tau")
 
 
 ## Specify path to WINE if using WINE 
@@ -53,6 +74,8 @@ if (getwd() == "/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bay
 }
 
 
+
+
 ## configure model settings
 ################################################################################
 
@@ -61,7 +84,7 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 
-### fit model
+## fit model
 ################################################################################
 source(here("currently-benchmarking.R"))
 
@@ -70,7 +93,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T, debug = TRUE
+    "useWINE" = T, debug = T
   )
   
   
@@ -85,5 +108,6 @@ if (!currently_benchmarking()) {
   ###################################################################################
   
 }
+
 
 

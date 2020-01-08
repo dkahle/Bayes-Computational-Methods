@@ -5,6 +5,7 @@ library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("R2OpenBUGS")
 library("bench")
+library("here")
 
 
 
@@ -64,7 +65,9 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   bugs_fit <- bugs(
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,

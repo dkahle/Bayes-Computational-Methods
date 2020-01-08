@@ -11,17 +11,23 @@ library("here")
 
 ## generate/specify data
 ################################################################################
-
-n <- 10L # sample size
-alpha <- -5 # intercept
-beta <- 1 # single coefficient
+n <- 30L # sample size
+d <- 2L
+l <- 2L
+ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
+(x <- matrix(rnorm(n * d), nrow = n, byrow = TRUE))
+(y <- rbinom(n, 1, 0.5))
 
-x <- (rnorm(n, 5, 1)) # observed x values
-theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x 
-theta <- exp(theta_0) / (1 + exp(theta_0)) # generated values of bernoulli theta
-y <- (rbinom(n,1,theta))
+bugs_data <- list(
+  "N" = n,
+  "D" = d,
+  "L" = l,
+  "ll" = ll,
+  "y" = y, 
+  "x" = x
+)
 
 x <- as_data(x)
 y <- as_data(y)
@@ -32,14 +38,18 @@ y <- as_data(y)
 ################################################################################
 
 
+#### NOT COMPLETE ############
+mu <- normal(0, 1000, dim = c(d,1))
+sigma <- normal(0,1000, dim = c(d,1), truncation = c(0,Inf))
+beta_0 <- normal(rep(mu, l), rep(sigma,l), dim = c(d,l))
+beta <- rep(beta, l)
 
-alpha <- normal(0, 1000)
-beta <- normal(0, 1000)
+beta[,1] <- normal(mu, sigma, dim = c(d,1))
+beta_0 <- normal(mu, sigma, dim = c(d,1))
 
-theta_0 <- alpha + beta * x
-distribution(y) <- bernoulli(ilogit(theta))
+distribution(y) <- normal(alpha + beta * x, sigma)
 
-greta_model <- model(alpha, beta)
+greta_model <- model(alpha, beta, sigma)
 
 plot(greta_model)
 

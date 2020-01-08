@@ -80,17 +80,3 @@ stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
 
 
 
-
-## benchmarking
-###################################################################################
-
-
-bench_results <- mark(
-  stan_fit <- stan(
-    "file" = stan_file, "data" = stan_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
-  ),
-  iterations = 3
-)
-bench_results[1,2:9]
-

@@ -1,0 +1,82 @@
+---
+title: "Paper"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Outline
+- General Bayesian computational settings
+  - Chains
+  - Iterations
+  - Warmup
+  - Thinning
+  - initial value specification
+- Each sampler
+  - BUGS
+    - WINE
+    - Debugging
+  - Jags
+  - Nimble
+    - Crashes
+  - STAN
+    - RDS file
+  - Greta
+- Common coding techniques for each language
+  - Truncated normal
+  - Specifiying data and constants
+  - Matrix multiplication
+  - Initial value specification?
+- Benchmarking
+  - Run time
+  - Memory allocation
+  - Computational accuracy
+  - Benchmarking files
+- Folder design
+  - General model type
+    - Simple conjugate models
+    - Regression models
+    - Time Series models
+    - Survival models
+    - 8 Schools
+  - Specific model type
+  - Scripts for each method 
+  - Benchmarking
+- Here package
+- Models Used
+
+\newpage
+
+## BUGS
+
+OpenBugs is the oldest of the Bayesian samplers that we use. OpenBugs is designed for Windows machines, but there is a workaround to run it on MacOS and Linux, using WINE, a program designed to run Windows software on other operating systems. OpenBugs can be used through the actual click-and-point application, or through \texttt{R}, using the \texttt{R2OpenBugs} package, which allows for the user to send model scripts and data to OpenBugs without needing to leave the \texttt{R} interface. The \texttt{R} command to run OpenBugs is \texttt{bugs()}. Using this method causes OpenBugs to run invisibly in the background and return the results, unless an argument is specified to debug code in the actual application itself, which can be very useful. When using R to run OpenBugs, there is little way to know what went wrong if the code errors somewhere without interacting with the OpenBugs program itself. Using the \texttt{debug = T} argument within \texttt{bugs()} will cause the application to run in the forefront as if it were actually being used directly by the user. This way, any messages given by the application while running can be viewed directly. It is recommend to use \texttt{debug = T} only when debugging, as it does slow down the sampling process slightly. OpenBugs has many tools to visualize the performance the sampler which are easy to use. The biggest drawback of using the OpenBugs application directly is that specifiying the data can be tedious if the data is not very small in size or design. Using R to specify the data is much easier. 
+
+## JAGS
+
+In terms of model specification, JAGS is very similar to OpenBugs, but works more seemlessly in R using the package \texttt{rjags}. The \texttt{runjags} is an optional package that allows for the JAGS model script to be inputted as a string, and run using the \texttt{run.jags()} function. Since JAGS runs inside \texttt{R} itself, it is very easy to work with. Helpful errors are given when there is an issue with the model code or sampling process. JAGS is often a very fast sampler, especially for less complicated models. 
+
+## Nimble
+
+Nimble is an extension of Bugs that allows for bayesian computation within \texttt{R}, but uses C++ under the hood to compile models and algorithms for speed. Using the \texttt{nimble} package, Nimble can perform MCMC bayesian computations, but also allows for other types of algorithms to be loaded or custom-built. It can also compile other code without BUGS models into C++ for other uses. For the purpose of bayesian sampling using MCMC, Nimble is used very similarly to BUGS in practicality. The flexibility of Nimble is not needed in most cases when doing MCMC. The model specification language is almost identical to OpenBugs. A model can be both compiled and run using the function \texttt{nimbleMCMC()}. Because the model is compiled using C++ each time, this can drastically increase the total computation time as compared to other sampling methods. Occasionally, Nimble can also freeze up or fail, which can take a bit of time to fix.
+
+## STAN
+
+STAN is a language in-and-of itself used for statistcal modeling and data analysis. STAN can be used in several programming languages, including \texttt{R} and Python. While many bayesian samplers use Gibbs sampling, STAN uses Hamiltonian Monte Carlo under the hood, a more computationally efficient sampler that is based on an advanced physics simulation. This can greatly reduce the computational time for many types of statistical models, especially for more complicated ones. Like Nimble, STAN compiles each model, but one big advantage is that it can store each compiled model in a .Rds file, which allows for repeated use without the need to re-compile each time. In \texttt{R}, STAN is used through the \texttt{rstan} package, which allows for data to be loaded through normal \texttt{R} data structures. The biggest practical difference in using STAN compared to other bayesian computational methods is in the model specification process. STAN requires a model object in the form of a .stan file, which is created in a very unique language that is more formal than in BUGS. A .stan file, either created through a character string in R or in a seperate text file, can be used by the \texttt{stan()} function, which takes the file along with the data to perform the sampling. There is a very robust set of manuals for STAN users, compared to other methods.
+
+## Greta
+
+Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. It also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that Greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions.
+
+
+
+
+
+
+
+
+
+
+
+

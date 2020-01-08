@@ -13,17 +13,25 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-lambda <- 1/2 # exponential lambda
-n <- 10       # sample size
+n <- 30L # sample size
+d <- 2L
+l <- 2L
+ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
-
-(y <- rexp(n, lambda))
+(x <- matrix(rnorm(n * d), nrow = n, byrow = TRUE))
+(y <- rbinom(n, 1, 0.5))
 
 jags_data <- list(
-  "y" = y,
-  "N" = n
+  "N" = n,
+  "D" = d,
+  "L" = l,
+  "ll" = ll,
+  "y" = y, 
+  "x" = x
 )
+
+
 
 
 ## specify jags model
@@ -31,14 +39,21 @@ jags_data <- list(
 
 jags_model <- "
   model{
-    for (i in 1:N) {
-      y[i] ~ dexp(lambda)
+    for (d in 1:D) {
+      mu[d] ~ dnorm(0, 1 / (100 ^ 2))
+      tau[d] ~ dnorm(0,0.0001)  I(0, )
+      for (l in 1:L) {
+        beta[l,d] ~ dnorm(mu[d], tau[d])
+      }
     }
-    lambda ~ dgamma(1,1)
+    for (n in 1:N) {
+      logit(theta[n]) <- x[n,] %*% beta[ll[n],]
+      y[n] ~ dbern(theta[n])
+    }
   }
 "
 
-jags_monitor <- c("lambda")
+jags_monitor <- c("mu", "beta", "theta", "tau")
 
 
 ## configure model settings
@@ -47,6 +62,7 @@ jags_monitor <- c("lambda")
 n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
+
 
 
 ## fit model
@@ -73,7 +89,7 @@ if (!currently_benchmarking()) {
   dimnames(jags_fit_object) <- list(
     "iterations" = NULL, 
     "chains" = 1:n_chains, 
-    "parameters" = monitor
+    "parameters" = jags_monitor
   )
   
   
