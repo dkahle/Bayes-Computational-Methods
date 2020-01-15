@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Outline
 - General Bayesian computational settings
   - Chains
+    - Greta
   - Iterations
   - Warmup
   - Thinning
@@ -29,6 +30,7 @@ knitr::opts_chunk$set(echo = TRUE)
   - Specifiying data and constants
   - Matrix multiplication
   - Initial value specification?
+  - sigma / tau
 - Benchmarking
   - Run time
   - Memory allocation
@@ -51,7 +53,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## BUGS
 
-OpenBugs is the oldest of the Bayesian samplers that we use. OpenBugs is designed for Windows machines, but there is a workaround to run it on MacOS and Linux, using WINE, a program designed to run Windows software on other operating systems. OpenBugs can be used through the actual click-and-point application, or through \texttt{R}, using the \texttt{R2OpenBugs} package, which allows for the user to send model scripts and data to OpenBugs without needing to leave the \texttt{R} interface. The \texttt{R} command to run OpenBugs is \texttt{bugs()}. Using this method causes OpenBugs to run invisibly in the background and return the results, unless an argument is specified to debug code in the actual application itself, which can be very useful. When using R to run OpenBugs, there is little way to know what went wrong if the code errors somewhere without interacting with the OpenBugs program itself. Using the \texttt{debug = T} argument within \texttt{bugs()} will cause the application to run in the forefront as if it were actually being used directly by the user. This way, any messages given by the application while running can be viewed directly. It is recommend to use \texttt{debug = T} only when debugging, as it does slow down the sampling process slightly. OpenBugs has many tools to visualize the performance the sampler which are easy to use. The biggest drawback of using the OpenBugs application directly is that specifiying the data can be tedious if the data is not very small in size or design. Using R to specify the data is much easier. 
+OpenBugs is the oldest of the Bayesian samplers that we use. OpenBugs is designed for Windows machines, but there is a workaround to run it on MacOS and Linux, using WINE, a program designed to run Windows software on other operating systems. OpenBugs can be used through the actual click-and-point application, or through \texttt{R}, using the \texttt{R2OpenBugs} package, which allows for the user to send model scripts and data to OpenBugs without needing to leave the \texttt{R} interface. The \texttt{R} command to run OpenBugs is \texttt{bugs()}. Using this method causes OpenBugs to run invisibly in the background and return the results, unless an argument is specified to debug code in the actual application itself, which can be very useful. When using R to run OpenBugs, there is little way to know what went wrong if the code errors somewhere without interacting with the OpenBugs program itself. Using the \texttt{debug = T} argument within \texttt{bugs()} will cause the application to run in the forefront as if it were actually being used directly by the user. This way, any messages given by the application while running can be viewed directly. It is recommend to use \texttt{debug = T} only when debugging, as it does slow down the sampling process slightly. OpenBugs has many tools to visualize the performance the sampler which are easy to use. The biggest drawback of using the OpenBugs application directly is that specifiying the data can be tedious if the data is not very small in size or design. Using R to specify the data is much easier. One unique feature in OpenBugs is the Doodle tool, which allows for model specification through the creation of a diagram of nodes representing the parameters. Though using Doodle can be helpful for illustration, it is not used often in practice.
 
 ## JAGS
 
@@ -67,7 +69,7 @@ STAN is a language in-and-of itself used for statistcal modeling and data analys
 
 ## Greta
 
-Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. It also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that Greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions.
+Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. It also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that Greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions. Greta does offer a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
 
 
 
