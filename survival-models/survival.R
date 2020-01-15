@@ -97,7 +97,7 @@ jags_fit
 # http://www.mas.ncl.ac.uk/~nmf16/teaching/mas8391/survival.pdf
 # https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html#what_is_censoring
 
-
+# http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Survival/BS704_Survival6.html
 
 
 
