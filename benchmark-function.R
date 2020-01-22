@@ -18,12 +18,13 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
       ), 
       "stan_fit" = stan(
         "file" = stan_file, "data" = stan_data,
-        "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+        "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
+        "control" = list("adapt_delta" = 0.99)
       ),
-      "greta_fit" = mcmc(
-        "model" = greta_model, "n_samples" = n_iter,
-        "warmup" = n_warmup, "chains" = n_chains
-      ),
+      # "greta_fit" = mcmc(
+      #   "model" = greta_model, "n_samples" = n_iter,
+      #   "warmup" = n_warmup, "chains" = n_chains
+      # ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE
@@ -61,16 +62,15 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
         "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
       ), 
-      # "stan_compile" = stan_model("file" = stan_file
-      # ),
       "stan_fit" = stan(
         "file" = stan_file, "data" = stan_data,
-        "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+        "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
+        "control" = list("adapt_delta" = 0.99)
       ),
-      "greta_fit" = mcmc(
-        "model" = greta_model, "n_samples" = n_iter,
-        "warmup" = n_warmup,"chains" = n_chains
-      ),
+      # "greta_fit" = mcmc(
+      #   "model" = greta_model, "n_samples" = n_iter,
+      #   "warmup" = n_warmup,"chains" = n_chains
+      # ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE

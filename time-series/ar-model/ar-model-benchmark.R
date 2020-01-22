@@ -15,11 +15,11 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-jags.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
+source(here("time-series", "ar-model", "ar-model-jags.R"))
+source(here("time-series", "ar-model", "ar-model-bugs.R"))
+source(here("time-series", "ar-model", "ar-model-nimble.R"))
+source(here("time-series", "ar-model", "ar-model-stan.R"))
+source(here("time-series", "ar-model", "ar-model-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -34,7 +34,7 @@ n_warmup <- 1e3L
 
 num_iterations <- 50 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
+rds_file_location <- here("time-series", "ar-model.rds")
 
 source(here("benchmark-function.R"))
 

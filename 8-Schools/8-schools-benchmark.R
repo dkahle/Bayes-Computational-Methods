@@ -15,11 +15,11 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-jags.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
-source(here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
+source(here("8-schools", "8-schools-jags.R"))
+source(here("8-schools", "8-schools-bugs.R"))
+source(here("8-schools", "8-schools-nimble.R"))
+source(here("8-schools", "8-schools-stan.R"))
+source(here("8-schools", "8-schools-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -32,9 +32,9 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 50 # Number of times you want to benchmark each model\
+num_iterations <- 1 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
+rds_file_location <- here("8-schools", "8-schools.rds")
 
 source(here("benchmark-function.R"))
 

@@ -40,7 +40,7 @@ nimble_model <- nimbleCode({
   mu ~ dnorm(0, 0.0001)
 })
 
-nimble_monitors <- c("mu", "tau", "eta", "theta")
+nimble_monitor <- c("mu", "tau", "eta", "theta")
 
 
 ## configure model settings
@@ -65,7 +65,7 @@ if (!currently_benchmarking()) {
   
   nimble_fit <- nimbleMCMC(
     "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
-    "inits" = nimble_inits, "monitors" = nimble_monitors, "nchains" = n_chains, 
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
   

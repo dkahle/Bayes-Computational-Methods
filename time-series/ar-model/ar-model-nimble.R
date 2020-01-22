@@ -48,7 +48,7 @@ nimble_model <- nimbleCode({
   sigma <- sqrt(1 / tau)
 })
 
-nimble_monitors <- c("alpha", "beta", "sigma")
+nimble_monitor <- c("alpha", "beta", "sigma")
 
 
 ## configure model settings
@@ -73,7 +73,7 @@ if (!currently_benchmarking()) {
   
   nimble_fit <- nimbleMCMC(
     "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
-    "inits" = nimble_inits, "monitors" = nimble_monitors, "nchains" = n_chains, 
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
   

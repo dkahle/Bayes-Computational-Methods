@@ -33,7 +33,7 @@ nimble_model <- nimbleCode({
   theta ~ dgamma(3,1)
 })
 
-nimble_monitors <- c("theta")
+nimble_monitor <- c("theta")
 
 
 ## configure model settings
