@@ -12,25 +12,35 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+alpha <- 2 #beta distribution alpha
+beta <- 1 #beta distribution beta
+N <- 10 # sample size
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(n <- rbinom(N, 20, 0.5))
+(theta <- rbeta(N, alpha, beta))
+(y <- rbinom(N, n, theta))
+
 
 nimble_data <- list(
-  "y" = y
+  "y" = y,
+  "n" = n
 )
 
-nimble_constants <- list()
+nimble_constants <- list(
+  "N" = N
+)
 
 
 ## specify nimble model
 ################################################################################
 
 nimble_model <- nimbleCode({
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
+  for (i in 1:N) {
+    theta[i] ~ dbeta(2,1)
+    y[i] ~ dbin(theta[i], n[i])
+  }
 })
 
 nimble_monitor <- c("theta")
@@ -44,7 +54,7 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
+  "theta" = rbeta(10,2,1)
 )
 
 
@@ -72,6 +82,6 @@ if (!currently_benchmarking()) {
   ###################################################################################
   
 }  
-  
+
 
 
