@@ -3,75 +3,66 @@
 
 library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
-library("nimble")
+library("greta")
+library("bayesplot")
 library("bench")
 library("here")
-
 
 
 ## generate/specify data
 ################################################################################
 
-theta <- 5 # poisson theta
+alpha <- 2 #beta distribution alpha
+beta <- 1 #beta distribution beta
+N <- 10 # sample size
 
 set.seed(1)
 
-(y <- rpois(1, theta))
+(n <- rbinom(N, 20, 0.5))
+(theta <- rbeta(N, alpha, beta))
+(y <- rbinom(N, n, theta))
 
-nimble_data <- list(
-  "y" = y
-)
+n <- as_data(n)
+y <- as_data(y)
 
-nimble_constants <- list()
-
-
-## specify nimble model
+## specify greta model
 ################################################################################
 
-nimble_model <- nimbleCode({
-  y ~ dpois(theta)
-  theta ~ dgamma(3,1)
-})
+theta <- beta(2,1, dim = c(N,1))
+distribution(y) <- binomial(n, theta, dim = c(N,1))
 
-nimble_monitor <- c("theta")
+greta_model <- model(theta)
 
+plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
-nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
-)
 
 
 ## fit model
 ################################################################################
+
 source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   
-  nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  
+  greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup, "chains" = n_chains
   )
+  
   
   
   ## assess fit
   ################################################################################
   
-  nimble_fit$summary$all.chains
+  summary(greta_fit)
   
-  
-  
-  ## assess convergence issues 
-  ###################################################################################
-  
-}  
-  
-
+}
 
