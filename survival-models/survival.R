@@ -49,11 +49,13 @@ library("here")
 
 y <- vet$time
 trt <- vet$trt
+trt <- trt %>% as.numeric() - 1
 
 jags_data <- list(
   "t" = y,
   "x" = trt,
-  "N" = length(y)
+  "N" = length(y)#,
+#  "alpha" = 1
 )
 
 jags_model <- "
@@ -62,8 +64,29 @@ jags_model <- "
       lambda[i] <- exp(beta_0 + beta * x[i])
       t[i] ~ dexp(lambda[i])
     }
+    beta ~ dunif(-1000,1000)
+    beta_0 ~ dunif(-1000,1000)
+  }
+"
+
+jags_model <- "
+  model{
+    for (i in 1:N) {
+      lambda[i] <- exp(beta * x[i])
+      t[i] ~ dexp(lambda[i])
+    }
     beta ~ dnorm(0,0.0001)
-    beta_0 ~ dnorm(0,0.0001)
+  }
+"
+
+jags_model <- "
+  model{
+    for (i in 1:N) {
+      h[i] <- exp(beta * x[i])
+      lambda[i] <- h[i]
+      t[i] ~ dweib(lambda[i], alpha)
+    }
+    beta ~ dnorm(0,0.0001)
   }
 "
 
@@ -79,7 +102,7 @@ jags_model <- "
 #   }
 # "
 
-jags_monitor <- c("beta_0", "beta")
+jags_monitor <- c("beta")
 
 n_chains <- 4L
 n_iter <- 1e4L
@@ -99,7 +122,7 @@ jags_fit
 
 # http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Survival/BS704_Survival6.html
 
-
+# http://www.people.vcu.edu/~dbandyop/pubh7440/SurvivalBUGS2015.pdf
 
 
 
