@@ -12,20 +12,34 @@ library("survival")
 ## generate/specify data
 ################################################################################
 
-data(veteran)
-vet <- mutate(veteran, AG = ifelse((age < 60), "LT60", "OV60"),
-              AG = factor(AG),
-              trt = factor(trt,labels=c("standard","test")),
-              prior = factor(prior,labels=c("N0","Yes")))
-vet <- filter(vet, status == 1)
+data(veteran) # load spatial data set
 
-y <- vet$time
-trt <- vet$trt %>% as.numeric() - 1
+t <- veteran$time # observed / censored event times
+x <- veteran$trt # single covariate
+not_censored <- veteran$status # indicator variable for those who weren't censored
+is_censored <- 1 - not_censored # indicator variable for those who were censored
+N <- length(t)
+
+# Here we create variables that will allow us to handle censored data in the bayes model
+num_uncensored <- sum(not_censored)
+start_censored <- num_uncensored + 1
+num_censored <- sum(is_censored)
+t <- t[order(is_censored)]
+x <- x[order(is_censored)]
+t_censor <- t
+
+t_censor <- t[start_censored:N]
+t <- t[1:num_uncensored]
+x_c <- x[start_censored:N]
+x <- x[1:num_uncensored]
 
 stan_data <- list(
-  "t" = y,
-  "x" = trt,
-  "N" = length(y)
+  "t" = t,
+  "t_censor" = t_censor,
+  "x" = x,
+  "x_c" = x_c,
+  "num_uncensored" = num_uncensored,
+  "num_censored" = num_censored
 )
 
 
@@ -48,13 +62,20 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 
+t_inits <- t_censor + 1
+stan_inits <- list(
+  list("t_u" = t_inits),
+  list("t_u" = t_inits),
+  list("t_u" = t_inits),
+  list("t_u" = t_inits)
+)
 ## fit model
 ################################################################################
 source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   stan_fit <- stan(
-    "file" = stan_file, "data" = stan_data, 
+    "file" = stan_file, "data" = stan_data, "init" = stan_inits,
     "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup, 
     "control" = list("adapt_delta" = 0.99)
   )

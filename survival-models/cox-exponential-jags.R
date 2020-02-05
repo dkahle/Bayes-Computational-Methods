@@ -19,11 +19,11 @@ data(veteran) # load spatial data set
 t <- veteran$time # observed / censored event times
 x <- veteran$trt # single covariate
 not_censored <- veteran$status # indicator variable for those who weren't censored
-is_censored <- 1 - status # indicator variable for those who were censored
+is_censored <- 1 - not_censored # indicator variable for those who were censored
 
 # Here we create variables that will allow us to handle censored data in the bayes model
-t_censor <- t + status
-t[status == 0] <- NA
+t_censor <- t + not_censored
+t[not_censored == 0] <- NA
 
 
 jags_data <- list(
@@ -33,6 +33,30 @@ jags_data <- list(
   "is_censored" = is_censored,
   "N" = length(t)
 )
+
+t <- veteran$time # observed / censored event times
+x <- veteran$trt # single covariate
+not_censored <- veteran$status # indicator variable for those who weren't censored
+is_censored <- 1 - not_censored # indicator variable for those who were censored
+N <- length(t)
+
+# Here we create variables that will allow us to handle censored data in the bayes model
+num_uncensored <- sum(not_censored)
+start_censored <- num_uncensored + 1
+t <- t[order(is_censored)]
+x <- x[order(is_censored)]
+t_censor <- t
+t[start_censored:N] <- NA
+
+jags_data <- list(
+  "t" = t,
+  "t_censor" = t_censor,
+  "x" = x,
+  "num_uncensored" = num_uncensored,
+  "start_censored" = num_uncensored + 1,
+  "N" = length(t)
+)
+
 
 
 ## specify jags model
@@ -49,6 +73,20 @@ jags_model <- "
   }
 "
 
+jags_model <- "
+  model{
+    for (i in 1:num_uncensored) {
+      lambda[i] <- exp(beta * x[i])
+      t[i] ~ dexp(lambda[i])
+    }
+    for (i in start_censored:N) {
+      lambda[i] <- exp(beta * x[i])
+      t[i] ~ dexp(lambda[i]) T(t_censor[i],)
+    }
+    beta ~ dnorm(0,0.0001)
+  }
+"
+
 jags_monitor <- c("beta")
 
 
@@ -59,8 +97,8 @@ n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
-t_inits <- veteran$time + 1
-t_inits[status == 1] <- NA
+t_inits <- t_censor + 1
+t_inits[1:num_uncensored] <- NA
 jags_inits <- list("t" = t_inits)
 
 
