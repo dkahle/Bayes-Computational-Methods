@@ -21,10 +21,10 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
         "control" = list("adapt_delta" = 0.99)
       ),
-      # "greta_fit" = mcmc(
-      #   "model" = greta_model, "n_samples" = n_iter,
-      #   "warmup" = n_warmup, "chains" = n_chains
-      # ),
+      "greta_fit" = mcmc(
+        "model" = greta_model, "n_samples" = n_iter,
+        "warmup" = n_warmup, "chains" = n_chains
+      ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE
@@ -67,10 +67,10 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
         "control" = list("adapt_delta" = 0.99)
       ),
-      # "greta_fit" = mcmc(
-      #   "model" = greta_model, "n_samples" = n_iter,
-      #   "warmup" = n_warmup,"chains" = n_chains
-      # ),
+      "greta_fit" = mcmc(
+        "model" = greta_model, "n_samples" = n_iter,
+        "warmup" = n_warmup,"chains" = n_chains
+      ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE
