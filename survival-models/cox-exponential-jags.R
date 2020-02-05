@@ -14,20 +14,24 @@ library("survival")
 ## generate/specify data
 ################################################################################
 
-data(veteran)
-vet <- mutate(veteran, AG = ifelse((age < 60), "LT60", "OV60"),
-              AG = factor(AG),
-              trt = factor(trt,labels=c("standard","test")),
-              prior = factor(prior,labels=c("N0","Yes")))
-vet <- filter(vet, status == 1)
+data(veteran) # load spatial data set
 
-y <- vet$time
-trt <- vet$trt %>% as.numeric() - 1
+t <- veteran$time # observed / censored event times
+x <- veteran$trt # single covariate
+not_censored <- veteran$status # indicator variable for those who weren't censored
+is_censored <- 1 - status # indicator variable for those who were censored
+
+# Here we create variables that will allow us to handle censored data in the bayes model
+t_censor <- t + status
+t[status == 0] <- NA
+
 
 jags_data <- list(
-  "t" = y,
-  "x" = trt,
-  "N" = length(y)
+  "t" = t,
+  "x" = x,
+  "t_censor" = t_censor,
+  "is_censored" = is_censored,
+  "N" = length(t)
 )
 
 
@@ -37,6 +41,7 @@ jags_data <- list(
 jags_model <- "
   model{
     for (i in 1:N) {
+      is_censored[i] ~ dinterval(t[i], t_censor[i])
       lambda[i] <- exp(beta * x[i])
       t[i] ~ dexp(lambda[i])
     }
@@ -54,6 +59,10 @@ n_chains <- 4L
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
+t_inits <- veteran$time + 1
+t_inits[status == 1] <- NA
+jags_inits <- list("t" = t_inits)
+
 
 ## fit model
 ################################################################################
@@ -63,7 +72,7 @@ if (!currently_benchmarking()) {
   
   
   jags_fit <- run.jags(
-    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor, 
+    "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor, "inits" = jags_inits,
     "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
   ) 
   

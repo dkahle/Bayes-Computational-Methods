@@ -13,21 +13,26 @@ library("survival")
 ## generate/specify data
 ################################################################################
 
-data(veteran)
-vet <- mutate(veteran, AG = ifelse((age < 60), "LT60", "OV60"),
-              AG = factor(AG),
-              trt = factor(trt,labels=c("standard","test")),
-              prior = factor(prior,labels=c("N0","Yes")))
-vet <- filter(vet, status == 1)
+data(veteran) # load spatial data set
 
-y <- vet$time
-trt <- vet$trt %>% as.numeric() - 1
+t <- veteran$time # observed / censored event times
+x <- veteran$trt # single covariate
+not_censored <- veteran$status # indicator variable for those who weren't censored
+is_censored <- 1 - status # indicator variable for those who were censored
+
+# Here we create variables that will allow us to handle censored data in the bayes model
+t_censor <- t + status
+t[status == 0] <- NA
+
 
 bugs_data <- list(
-  "t" = y,
-  "x" = trt,
-  "N" = length(y)
+  "t" = t,
+  "x" = x,
+  "t_censor" = t_censor,
+  "is_censored" = is_censored,
+  "N" = length(t)
 )
+
 
 
 ## specify bugs model
@@ -35,8 +40,17 @@ bugs_data <- list(
 
 bugs_model <- function() {
   for (i in 1:N) {
+    is_censored[i] ~ dinterval(t[i], t_censor[i])
     lambda[i] <- exp(beta * x[i])
     t[i] ~ dexp(lambda[i])
+  }
+  beta ~ dnorm(0,0.0001)
+}
+
+bugs_model <- function() {
+  for (i in 1:N) {
+    lambda[i] <- exp(beta * x[i])
+    t[i] ~ dexp(lambda[i]) %_% I(t_censor[i], )
   }
   beta ~ dnorm(0,0.0001)
 }
@@ -65,9 +79,13 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
-n_iter <- 1e4L
-n_warmup <- 1e3L
+n_chains <- 1L
+n_iter <- 5000
+n_warmup <- 1000
+
+t_inits <- veteran$time + 1
+t_inits[status == 1] <- NA
+bugs_inits <- replicate(n_chains, list("t" = t_inits), simplify = FALSE)
 
 
 ## fit model
@@ -76,8 +94,8 @@ source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   bugs_fit <- bugs(
-    "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
-    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
+    "model.file" = bugs.file, "data" = bugs_data,  "parameters.to.save" = bugs_monitor, 
+    "inits" = bugs_inits, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
     "useWINE" = T
   )
