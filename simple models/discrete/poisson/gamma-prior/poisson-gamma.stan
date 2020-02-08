@@ -3,7 +3,7 @@ data {
 }
 
 parameters {
-  real theta;                
+  real <lower=0> theta;                
 }
 
 model {
