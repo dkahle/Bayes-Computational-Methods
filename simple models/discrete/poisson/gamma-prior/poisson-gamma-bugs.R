@@ -70,7 +70,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T, debug = TRUE
+    "useWINE" = T, debug = FALSE
   )
   
   
@@ -80,9 +80,23 @@ if (!currently_benchmarking()) {
   
   bugs_fit$summary
   
+  bugs_fit_object <- bugs_fit$sims.array[,,1]
+  dim(bugs_fit_object) <- c(dim(bugs_fit_object), 1)
+  dimnames(bugs_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = bugs_monitor
+  )
+  
+  
+  bugs_fit_object %>% bayesplot::mcmc_dens()
+  
   
   ## assess convergence issues 
   ###################################################################################
+  
+  bugs_fit_object %>% mcmc_acf_bar()
+  bugs_fit_object %>% mcmc_trace()
   
 }
 
