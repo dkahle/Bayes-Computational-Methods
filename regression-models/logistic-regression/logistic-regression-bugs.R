@@ -30,6 +30,11 @@ bugs_data <- list(
   "x" = x, 
   "tau" = (1 / 1000)^2
 )
+bugs_data <- list(
+  "n" = n,
+  "y" = y, 
+  "x" = x
+)
 
 
 
@@ -42,8 +47,8 @@ bugs_model <- function() {
     logit(theta[i]) <- alpha + beta * x[i]
     y[i] ~ dbern(theta[i])
   }
-  alpha ~ dnorm(0,tau)
-  beta ~ dnorm(0,tau)
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
 }
 
 
@@ -86,7 +91,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
+    "useWINE" = T, debug = TRUE
   )
   
   

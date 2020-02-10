@@ -14,11 +14,11 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("regression-models","logistic-regression","logistic-regression-jags.R"))
-source(here("regression-models","logistic-regression","logistic-regression-bugs.R"))
-source(here("regression-models","logistic-regression","logistic-regression-nimble.R"))
-source(here("regression-models","logistic-regression","logistic-regression-stan.R"))
-source(here("regression-models","logistic-regression","logistic-regression-greta.R"))
+source(here("regression-models","poisson-regression","poisson-regression-jags.R"))
+source(here("regression-models","poisson-regression","poisson-regression-bugs.R"))
+source(here("regression-models","poisson-regression","poisson-regression-nimble.R"))
+source(here("regression-models","poisson-regression","poisson-regression-stan.R"))
+source(here("regression-models","poisson-regression","poisson-regression-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -33,7 +33,7 @@ n_warmup <- 1e3L
 
 num_iterations <- 1 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "regression-models","logistic-regression","logistic-regression.rds")
+rds_file_location <- here("regression-models","poisson-regression","poisson-regression-greta.rds")
 
 source(here("benchmark-function.R"))
 

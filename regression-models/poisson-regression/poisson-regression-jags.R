@@ -45,7 +45,7 @@ jags_model <- "
   }
 "
 
-monitor <- c("alpha", "beta")
+jags_monitor <- c("alpha", "beta")
 
 
 ## configure model settings

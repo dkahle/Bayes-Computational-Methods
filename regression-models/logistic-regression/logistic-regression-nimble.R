@@ -26,7 +26,7 @@ theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x
 nimble_data <- list(
   "n" = n,
   "y" = y, 
-  "x" = x,
+  "x" = x
 )
 
 nimble_constants <- list()
