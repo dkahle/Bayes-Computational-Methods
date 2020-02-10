@@ -3,7 +3,7 @@ data {
 }
 
 parameters {
-  real p;                
+  real<lower=0, upper=1> p;                
 }
 
 model {

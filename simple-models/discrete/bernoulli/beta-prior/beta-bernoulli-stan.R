@@ -45,7 +45,9 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
   stan_fit <- stan(
     "file" = stan_file, "data" = stan_data, 

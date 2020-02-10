@@ -21,16 +21,17 @@ nimble_data <- list(
   "y" = y
 )
 
+nimble_constants <- list()
 
 ## specify jags model
 ################################################################################
 
 nimble_model <- nimbleCode({
-  y ~ dbin(theta,1)
-  theta ~ dbeta(1,1)
+  y ~ dbern(p)
+  p ~ dbeta(1,1)
 })
 
-nimble_monitor <- c("theta")
+nimble_monitor <- c("p")
 
 ## configure model settings
 ################################################################################
@@ -40,16 +41,18 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "theta" = rgamma(1,3,1)
+  "p" = rbeta(1,1,1)
 )
 
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   
   nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = nimble_data, 
+    "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants, 
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
