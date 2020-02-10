@@ -13,16 +13,18 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-n <- 10L # binomial n
-p <- .25 # binomial p
+mu <- 1    # normal mu
+sigma <- 2 # normal sigma
+n <- 10    # sample size
 
 set.seed(1)
 
-(y <- rbinom(1, n, p))
+(y <- rnorm(n, mu, sigma))
 
 stan_data <- list(
-  "n" = n,
-  "y" = y
+  "y" = y,
+  "sigma" = sigma,
+  "N" = n
 )
 
 
@@ -31,7 +33,7 @@ stan_data <- list(
 ################################################################################
 
 # read it in from file
-stan_file <- here("simple models", "continuous", "normal", "normal-prior", "normal-normal.stan")
+stan_file <- here("simple-models", "continuous", "normal", "normal-prior", "normal-normal.stan")
 
 # file.show(stan_file)
 

@@ -18,6 +18,7 @@ source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomia
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-bugs.R"))
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-nimble.R"))
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-stan.R"))
+source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 

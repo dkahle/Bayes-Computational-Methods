@@ -1,7 +1,7 @@
 data {
-  int<lower=0> J;
-  real y[J];
-  real <lower=0> tau;
+  int<lower=0> N;
+  real y[N];
+  real <lower=0> sigma;
 }
 
 parameters {
@@ -9,7 +9,7 @@ parameters {
 }
 
 model {
-  y ~ normal(mu,(1 / tau^2));
+  y ~ normal(mu,sigma);
   mu ~ normal(0,1);
 }
 
