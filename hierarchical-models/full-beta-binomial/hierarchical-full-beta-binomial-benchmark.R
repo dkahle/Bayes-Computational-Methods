@@ -32,7 +32,7 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 5 # Number of times you waçnt to benchmark each model\
+num_iterations <- 50 # Number of times you waçnt to benchmark each model\
 
 rds_file_location <- here("hierarchical-models", "full-beta-binomial", "hierarchical-full-beta-binomial.rds")
 
