@@ -66,11 +66,26 @@ if (!currently_benchmarking()) {
   
   nimble_fit$summary$all.chains
   
+  nimble_fit_vector <- nimble_fit$samples %>% as_vector()
+  nimble_fit_object <- array(nimble_fit_vector, 
+    dim = c(length(nimble_fit_vector) / n_chains, n_chains))
+  dim(nimble_fit_object) <- c(dim(nimble_fit_object), 1)
+  dimnames(nimble_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = nimble_monitor
+  )
+  
+  
+  nimble_fit_object %>% bayesplot::mcmc_dens()
   
   
   ## assess convergence issues 
   ###################################################################################
   
+  nimble_fit_object %>% mcmc_acf_bar()
+  nimble_fit_object %>% mcmc_trace()
+
 }  
   
 
