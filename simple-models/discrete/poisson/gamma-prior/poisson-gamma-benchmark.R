@@ -9,15 +9,17 @@ library("rjags"); library("runjags")
 library("R2OpenBUGS")
 library("nimble")
 library("rstan"); rstan_options(auto_write = FALSE)
+library("greta")
 options("bayes_benchmark" = TRUE)
 
 ## Source code
 ################################################################################
 
-source(here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-jags.R"))
-source(here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-bugs.R"))
-source(here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-nimble.R"))
-source(here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-stan.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-jags.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -30,16 +32,14 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 1 # Number of times you want to benchmark each model\
+num_iterations <- 50 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.rds")
+rds_file_location <- here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
 
 source(here("benchmark-function.R"))
 
 # choose to include stan compilation time with argument "stan_compile = TRUE"
 run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
-
-
 
 

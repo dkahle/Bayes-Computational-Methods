@@ -4,7 +4,7 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
       "jags_fit" = run.jags(
         "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor,
         "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
-      ), 
+      ),
       "bugs_fit" = bugs(
         "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor,
         "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
@@ -15,16 +15,16 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
         "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
         "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-      ), 
+      ),
       "stan_fit" = stan(
         "file" = stan_file, "data" = stan_data,
         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
         "control" = list("adapt_delta" = 0.99)
       ),
-      "greta_fit" = mcmc(
-        "model" = greta_model, "n_samples" = n_iter,
-        "warmup" = n_warmup, "chains" = n_chains
-      ),
+      # "greta_fit" = mcmc(
+      #   "model" = greta_model, "n_samples" = n_iter,
+      #   "warmup" = n_warmup, "chains" = n_chains
+      # ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE
@@ -67,10 +67,10 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE) {
         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
         "control" = list("adapt_delta" = 0.99)
       ),
-      "greta_fit" = mcmc(
-        "model" = greta_model, "n_samples" = n_iter,
-        "warmup" = n_warmup,"chains" = n_chains
-      ),
+      # "greta_fit" = mcmc(
+      #   "model" = greta_model, "n_samples" = n_iter,
+      #   "warmup" = n_warmup,"chains" = n_chains
+      # ),
       "check" = FALSE, 
       "iterations" = num_iterations, 
       "filter_gc" = FALSE

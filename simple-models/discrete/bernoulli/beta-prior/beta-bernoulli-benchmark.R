@@ -14,10 +14,10 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial-jags.R"))
-source(here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial-bugs.R"))
-source(here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial-nimble.R"))
-source(here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial-stan.R"))
+source(here("simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-jags.R"))
+source(here("simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-bugs.R"))
+source(here("simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-nimble.R"))
+source(here("simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-stan.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -32,7 +32,7 @@ n_warmup <- 1e3L
 
 num_iterations <- 1 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "discrete", "binomial", "beta-prior", "beta-binomial.rds")
+rds_file_location <- here("simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.rds")
 
 source(here("benchmark-function.R"))
 

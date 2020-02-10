@@ -14,10 +14,11 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-jags.R"))
-source(here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-bugs.R"))
-source(here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-nimble.R"))
-source(here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-stan.R"))
+source(here("simple-models", "continuous", "normal", "normal-prior", "normal-normal-jags.R"))
+source(here("simple-models", "continuous", "normal", "normal-prior", "normal-normal-bugs.R"))
+source(here("simple-models", "continuous", "normal", "normal-prior", "normal-normal-nimble.R"))
+source(here("simple-models", "continuous", "normal", "normal-prior", "normal-normal-stan.R"))
+source(here("simple-models", "continuous", "normal", "normal-prior", "normal-normal-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -32,7 +33,7 @@ n_warmup <- 1e3L
 
 num_iterations <- 1 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau.rds")
+rds_file_location <- here("simple-models", "continuous", "normal", "normal-prior", "normal-normal.rds")
 
 source(here("benchmark-function.R"))
 

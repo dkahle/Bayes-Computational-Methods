@@ -6,23 +6,22 @@ library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("rstan"); rstan_options(auto_write = TRUE)
 library("bayesplot")
-library("bench")
 
 
 
 ## generate/specify data
 ################################################################################
 
-lambda <- 1/2 # exponential lambda
-n <- 10       # sample size
+n <- 10L # binomial n
+p <- .25 # binomial p
 
 set.seed(1)
 
-(y <- rexp(n, lambda))
+(y <- rbinom(1, n, p))
 
 stan_data <- list(
-  "y" = y,
-  "N" = n
+  "n" = n,
+  "y" = y
 )
 
 
@@ -31,7 +30,7 @@ stan_data <- list(
 ################################################################################
 
 # read it in from file
-stan_file <- here("simple models", "continuous", "exponential", "gamma-prior", "exponential-gamma.stan")
+stan_file <- here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial.stan")
 
 # file.show(stan_file)
 
@@ -79,7 +78,6 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
   
 }
-
 
 
 

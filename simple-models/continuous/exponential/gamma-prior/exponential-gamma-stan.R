@@ -13,14 +13,16 @@ library("bench")
 ## generate/specify data
 ################################################################################
 
-p <- .25 # bernoulli p
+lambda <- 1/2 # exponential lambda
+n <- 10       # sample size
 
 set.seed(1)
 
-(y <- rbinom(1, 1, p))
+(y <- rexp(n, lambda))
 
 stan_data <- list(
-  "y" = y
+  "y" = y,
+  "N" = n
 )
 
 
@@ -29,7 +31,7 @@ stan_data <- list(
 ################################################################################
 
 # read it in from file
-stan_file <- here("simple models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli.stan")
+stan_file <- here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma.stan")
 
 # file.show(stan_file)
 

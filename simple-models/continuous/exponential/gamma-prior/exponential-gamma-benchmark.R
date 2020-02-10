@@ -14,10 +14,11 @@ options("bayes_benchmark" = TRUE)
 ## Source code
 ################################################################################
 
-source(here("simple models", "continuous", "normal", "normal-prior", "normal-normal-jags.R"))
-source(here("simple models", "continuous", "normal", "normal-prior", "normal-normal-bugs.R"))
-source(here("simple models", "continuous", "normal", "normal-prior", "normal-normal-nimble.R"))
-source(here("simple models", "continuous", "normal", "normal-prior", "normal-normal-stan.R"))
+source(here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-jags.R"))
+source(here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-bugs.R"))
+source(here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-nimble.R"))
+source(here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-stan.R"))
+source(here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -32,7 +33,7 @@ n_warmup <- 1e3L
 
 num_iterations <- 1 # Number of times you want to benchmark each model\
 
-rds_file_location <- here("simple models", "continuous", "normal", "normal-prior", "normal-normal.rds")
+rds_file_location <- here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma.rds")
 
 source(here("benchmark-function.R"))
 
