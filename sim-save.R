@@ -1,6 +1,6 @@
 x <- run_benchmark(rds_file_location)
-hierarchical_full_beta_binomial_results <- x
-saveRDS(hierarchical_full_beta_binomial_results, file = "hierarchical-full-beta-binomial-results.rds")
+poisson_regression_results <- x
+saveRDS(poisson_regression_results, file = "poisson-regression-results.rds")
 x
 
 # readRDS("exponential-gamma-results.rds")

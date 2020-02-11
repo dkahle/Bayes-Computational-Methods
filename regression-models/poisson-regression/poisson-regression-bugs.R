@@ -40,6 +40,14 @@ bugs_model <- function() {
   alpha ~ dnorm(0, 0.0001)
   beta ~ dnorm(0, 0.0001)
 }
+bugs_model <- function() {
+  for (i in 1:N) {
+    log(lambda[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(lambda[i])
+  }
+  alpha ~ dnorm(0, 0.0001)
+  beta ~ dnorm(0, 0.0001)
+}
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
@@ -66,8 +74,8 @@ if (getwd() == "/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bay
 ################################################################################
 
 n_chains <- 4L
-n_iter <- 1e3L
-n_warmup <- 1e2L
+n_iter <- 1e4L
+n_warmup <- 1e3L
 
 
 ## fit model
@@ -80,7 +88,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
+    "useWINE" = T, debug = T
   )
   
   

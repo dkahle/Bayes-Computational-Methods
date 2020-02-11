@@ -31,9 +31,9 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 1 # Number of times you want to benchmark each model\
+num_iterations <- 50 # Number of times you want to benchmark each model
 
-rds_file_location <- here("regression-models","poisson-regression","poisson-regression-greta.rds")
+rds_file_location <- here("regression-models","poisson-regression","poisson-regression.rds")
 
 source(here("benchmark-function.R"))
 
