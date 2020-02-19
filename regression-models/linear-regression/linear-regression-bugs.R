@@ -83,7 +83,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T, debug = TRUE
+    "useWINE" = T, debug = FALSE
   )
   
   

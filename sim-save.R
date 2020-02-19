@@ -1,6 +1,6 @@
 x <- run_benchmark(rds_file_location)
-poisson_regression_results <- x
-saveRDS(poisson_regression_results, file = "poisson-regression-results.rds")
+linear_regression_results <- x
+saveRDS(linear_regression_results, file = "linear-regression-results.rds")
 x
 
 # readRDS("exponential-gamma-results.rds")

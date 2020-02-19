@@ -51,6 +51,15 @@ bugs_model <- function() {
   beta ~ dnorm(0,0.0001)
 }
 
+bugs_model <- function() {
+  for (i in 1:n) {
+    log(theta[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(theta[i])
+  }
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
+}
+
 
 bugs.file <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)

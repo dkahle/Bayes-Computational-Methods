@@ -40,14 +40,6 @@ bugs_model <- function() {
   alpha ~ dnorm(0, 0.0001)
   beta ~ dnorm(0, 0.0001)
 }
-bugs_model <- function() {
-  for (i in 1:N) {
-    log(lambda[i]) <- alpha + beta * x[i]
-    y[i] ~ dpois(lambda[i])
-  }
-  alpha ~ dnorm(0, 0.0001)
-  beta ~ dnorm(0, 0.0001)
-}
 
 
 bugs.file <- file.path(tempdir(), "model.txt")
@@ -74,8 +66,8 @@ if (getwd() == "/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bay
 ################################################################################
 
 n_chains <- 4L
-n_iter <- 1e4L
-n_warmup <- 1e3L
+n_iter <- 1e3L
+n_warmup <- 1e2L
 
 
 ## fit model
@@ -93,7 +85,7 @@ if (!currently_benchmarking()) {
   
   
   
-  ## assess fit
+   b## assess fit
   ################################################################################
   
   bugs_fit$summary
