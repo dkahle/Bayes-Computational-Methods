@@ -1,0 +1,65 @@
+---
+title: "Paper"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Outline
+- Introduction to problem and history
+  - Bayesian paradigm
+  - How computing fits into bayesian paradigm
+  - Common terms that will be used in rest of paper
+  - Provide basic code example
+- General Bayesian computational settings
+  - Chains
+    - Greta
+  - Iterations
+  - Warmup
+    - STAN/Bugs uses warmup as a part of iterations, Jags/greta/Nimble have it seperate.
+  - Thinning
+  - initial value specification
+- Each sampler
+  - BUGS - 
+    - WINE
+    - Debugging
+  - Jags
+  - Nimble
+    - Crashes
+  - STAN
+    - RDS file
+  - greta
+- Common coding techniques for each language
+  - Model specification
+    - Truncated normal
+    - matrix multiplication
+    - Flat priors
+    - parameter order
+      - Binomial Stan has (n,p), rest have (p,n)
+    - Equations inside distribution parameters
+  - Data specification
+    - Nimble constants
+    - Nimble initial values
+    - initial values for each 
+- Benchmarking
+  - Run time
+  - Memory allocation
+  - Computational accuracy
+  - Benchmarking files
+- Folder design
+  - General model type
+    - Simple conjugate models
+    - Regression models
+    - Time Series models
+    - Survival models
+    - 8 Schools
+  - Specific model type
+  - Scripts for each method 
+  - Benchmarking
+- Here package
+- Models Used
+
+

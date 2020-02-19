@@ -31,10 +31,12 @@ y <- as_data(y)
 ## specify greta model
 ################################################################################
 
+
+
 alpha <- normal(0, 1000)
 beta <- normal(0, 1000)
 
-theta <- alpha + beta * x
+theta_0 <- alpha + beta * x
 distribution(y) <- bernoulli(ilogit(theta))
 
 greta_model <- model(alpha, beta)

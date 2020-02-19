@@ -5,6 +5,7 @@ library("tidyverse"); theme_set(theme_minimal())
 library("parallel"); options(mc.cores = detectCores())
 library("R2OpenBUGS")
 library("bench")
+library("here")
 
 
 
@@ -29,6 +30,11 @@ bugs_data <- list(
   "x" = x, 
   "tau" = (1 / 1000)^2
 )
+bugs_data <- list(
+  "n" = n,
+  "y" = y, 
+  "x" = x
+)
 
 
 
@@ -41,8 +47,17 @@ bugs_model <- function() {
     logit(theta[i]) <- alpha + beta * x[i]
     y[i] ~ dbern(theta[i])
   }
-  alpha ~ dnorm(0,tau)
-  beta ~ dnorm(0,tau)
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
+}
+
+bugs_model <- function() {
+  for (i in 1:n) {
+    log(theta[i]) <- alpha + beta * x[i]
+    y[i] ~ dpois(theta[i])
+  }
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
 }
 
 
@@ -55,7 +70,7 @@ bugs_monitor <- c("alpha", "beta")
 ## Specify path to WINE if using WINE 
 ###################################################################################
 
-if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
+if (getwd() == "/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods") {
   WINE="/usr/local/Cellar/wine/4.0.1/bin/wine"
   WINEPATH="/usr/local/Cellar/wine/4.0.1/bin/winepath"
   OpenBUGS.pgm="/Users/evanmiyakawa/OpenBugs/OpenBUGS323/OpenBUGS.exe" #~
@@ -78,12 +93,14 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   bugs_fit <- bugs(
     "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor, 
     "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
+    "useWINE" = T, debug = TRUE
   )
   
   

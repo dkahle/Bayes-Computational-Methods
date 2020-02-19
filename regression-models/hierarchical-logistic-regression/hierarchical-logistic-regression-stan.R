@@ -38,7 +38,7 @@ stan_data <- list(
 
 # read it in from file
 stan_file <- here("regression-models", "hierarchical-logistic-regression", "hierarchical-logistic-regression.stan")
-file.show(stan_file)
+# file.show(stan_file)
 
 
 
