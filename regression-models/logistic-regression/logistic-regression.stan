@@ -1,7 +1,7 @@
 data {
-  int<lower=0> N;
-  vector[N] x;
-  int<lower=0,upper=1> y[N];
+  int<lower=0> n;
+  vector[n] x;
+  int<lower=0,upper=1> y[n];
 }
 
 parameters {
@@ -14,4 +14,3 @@ model {
   alpha ~ normal(0,100);
   beta ~ normal(0,100);
 }
-

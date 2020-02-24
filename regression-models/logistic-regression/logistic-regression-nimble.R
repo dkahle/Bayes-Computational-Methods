@@ -24,12 +24,13 @@ theta_0 <- rnorm(n,alpha,0.5) + rnorm(n,beta,0.5) * x
 
 
 nimble_data <- list(
-  "n" = n,
   "y" = y, 
   "x" = x
 )
 
-nimble_constants <- list()
+nimble_constants <- list(
+  "n" = n
+)
 
 
 
@@ -42,8 +43,8 @@ nimble_model <- nimbleCode({
     logit(theta[i]) <- alpha + beta * x[i]
     y[i] ~ dbern(theta[i])
   }
-  alpha ~ dnorm(0,(1 / 1000^2))
-  beta ~ dnorm(0,(1 / 1000^2))
+  alpha ~ dnorm(0,0.0001)
+  beta ~ dnorm(0,0.0001)
 })
 
 nimble_monitor <- c("alpha", "beta")
@@ -57,9 +58,8 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-
-  "alpha" = rnorm(1,0,1000),
-  "beta" = rnorm(1,0,1000)
+  "alpha" = rnorm(1,0,1),
+  "beta" = rnorm(1,0,1)
 )
 
 
