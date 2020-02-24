@@ -13,7 +13,7 @@ library("here")
 ################################################################################
 n <- 30L # sample size
 d <- 2L
-l <- 2L
+l <- 3L
 ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
@@ -39,17 +39,27 @@ y <- as_data(y)
 
 
 #### NOT COMPLETE ############
-mu <- normal(0, 1000, dim = c(d,1))
+mu <- normal(0, 1000, dim = c(1,d))
 sigma <- normal(0,1000, dim = c(d,1), truncation = c(0,Inf))
-beta_0 <- normal(rep(mu, l), rep(sigma,l), dim = c(d,l))
-beta <- rep(beta, l)
+mu_matrix <- zeros(3,2)
+mu_matrix[1,] <- mu
+mu_matrix[2,] <- mu
+mu_matrix[3,] <- mu
+sigma_matrix <- zeros(3,2)
+sigma_matrix[1,] <- sigma
+sigma_matrix[2,] <- sigma
+sigma_matrix[3,] <- sigma
+beta <- normal(mu_matrix, sigma_matrix)
 
-beta[,1] <- normal(mu, sigma, dim = c(d,1))
-beta_0 <- normal(mu, sigma, dim = c(d,1))
+theta <- zeros(n,1)
+i <- 1
+for (i in 1:n) {
+  theta[i,] <- x[i,] %*% t(beta[ll[i],])
+}
 
-distribution(y) <- normal(alpha + beta * x, sigma)
+distribution(y) <- bernoulli(ilogit(theta))
 
-greta_model <- model(alpha, beta, sigma)
+greta_model <- model(mu, beta, sigma, theta)
 
 plot(greta_model)
 

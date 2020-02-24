@@ -1,5 +1,6 @@
 ---
-title: "Bayes Computational Method"
+title: "Bayes Computational Methods"
+author: "Evan Miyakawa"
 output: pdf_document
 ---
 

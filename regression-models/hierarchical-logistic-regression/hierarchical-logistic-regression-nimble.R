@@ -13,7 +13,7 @@ library("bench")
 
 n <- 30L # sample size
 d <- 2L
-l <- 2L
+l <- 3L
 ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
@@ -64,10 +64,10 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "mu" = rnorm(d,0,1000),
+  "mu" = rnorm(d,0,10),
   "theta" = rbeta(n,1,1),
-  "tau" = rep(1 / (abs(rnorm(1,0,1000)) ^ 2), d),
-  "beta" = matrix(rnorm(l * d,0,1000), nrow = l, ncol = d)
+  "tau" = rep(1 / (abs(rnorm(1,0,10)) ^ 2), d),
+  "beta" = matrix(rnorm(l * d,0,10), nrow = l, ncol = d)
 )
 
 

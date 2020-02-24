@@ -15,7 +15,7 @@ library("here")
 
 n <- 30L # sample size
 d <- 2L
-l <- 2L
+l <- 3L
 ll <- sapply(1:l, function(x) rep(x,n / l)) %>% as.numeric()
 
 set.seed(1)
