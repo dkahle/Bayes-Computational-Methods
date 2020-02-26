@@ -19,7 +19,7 @@ source(here("survival-models", "cox-exponential-jags.R"))
 source(here("survival-models", "cox-exponential-bugs.R"))
 source(here("survival-models", "cox-exponential-nimble.R"))
 source(here("survival-models", "cox-exponential-stan.R"))
-source(here("survival-models", "cox-exponential-greta.R"))
+# source(here("survival-models", "cox-exponential-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 

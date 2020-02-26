@@ -1,6 +1,6 @@
 data {
-  int<lower=3> T;  // number of observations
-  vector[T] y;     // observation at time T
+  int<lower=3> N;  // number of observations
+  vector[N] y;     // observation at time T
 }
 
 parameters {
@@ -10,22 +10,22 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] epsilon;    // error terms
+  vector[N] epsilon;    // error terms
   epsilon[1] = y[1] - mu;
   epsilon[2] = y[2] - mu - theta[1] * epsilon[1];
-  for (t in 3:T)
-    epsilon[t] = ( y[t] - mu
-                    - theta[1] * epsilon[t - 1]
-                    - theta[2] * epsilon[t - 2] );
+  for (n in 3:N)
+    epsilon[n] = ( y[n] - mu
+                    - theta[1] * epsilon[n - 1]
+                    - theta[2] * epsilon[n - 2] );
 }
 
 model {
   mu ~ cauchy(0, 2.5);
   theta ~ cauchy(0, 2.5);
   sigma ~ cauchy(0, 2.5);
-  for (t in 3:T)
-    y[t] ~ normal(mu
-                  + theta[1] * epsilon[t - 1]
-                  + theta[2] * epsilon[t - 2],
+  for (n in 3:N)
+    y[n] ~ normal(mu
+                  + theta[1] * epsilon[n - 1]
+                  + theta[2] * epsilon[n - 2],
                   sigma);
 }

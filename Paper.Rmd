@@ -9,6 +9,21 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
+# Introduction
+
+## The Bayes Paradigm
+
+In Bayesian statistical inference, we are interested in finding the posterior distribution of a certain parameter, given a prior distribution and a likelihood for that parameter from a sample of data. Bayes Rule states that, given events $A$ and $B$, we can find the conditional probability of $A$ given $B$ using $$ P(A | B) = \frac{P(B|A)}{P(B)}.$$ More formally, we can derive the posterior distribution of a parameter $\theta$, $h(\theta | x)$, by $$h(\theta | x_1, x_2, \dots, x_n) = \frac{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta)}{\int{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta) d \theta}},$$ where $\ell(x | \theta)$ is proportional to the likelihood of $\theta$, given the data, and $\pi(\theta)$ is the prior distribution of $\theta$. For example, suppose that $X_i \sim Bern(\theta)$, and we are interested in inference on $\theta$. A reasonable prior to assign to $\theta$ would be a $Beta(\alpha, \beta)$, distribution, given that $\theta$ is constrained to be between 0 and 1, which is a property of the Beta distribution. Therefore, given that $\theta \sim Beta(\alpha, \beta)$ for some known values of $\alpha$ and $\beta$, then 
+\begin{align*}
+  h(\theta | x) &= \frac{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta)}{\int{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta) d \theta}} \\
+  &= \frac{\theta ^ {\sum_{i=1}^{n} x_i} (1 - \theta) ^ {n - \sum_{i=1}^{n} x_i} \frac{\Gamma (\alpha + \beta)}{\Gamma(\alpha) + \Gamma(\beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}}{\int \theta ^ {\sum_{i=1}^{n} x_i} (1 - \theta) ^ {n - \sum_{i=1}^{n} x_i} \frac{\Gamma (\alpha + \beta)}{\Gamma(\alpha) + \Gamma(\beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1} d \theta} \\
+  &\propto \theta ^ {\sum (x_i) + \alpha - 1} (1 - \theta) ^ {n - \sum (x_i) + \beta - 1},
+\end{align*}
+which is the kernel of a $Beta\left(\sum (x_i) + \alpha, n - \sum (x_i) + \beta \right)$ distribution. Therefore, we can analytically calculate the posterior distribution of $\theta$ as $$h(\theta | x) \sim Beta(\sum (x_i) + \alpha, n - \sum (x_i) + \beta).$$
+
+In more complicated scenarios, it is not easy to calculate the posterior distribution of a parameter by hand, and in many cases it is impossible. This is where computing can help us. 
+
+
 # Bayesian Samplers
 
 ## OpenBUGS

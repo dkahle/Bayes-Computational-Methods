@@ -59,9 +59,9 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "mu" = rnorm(1,0,1000),
-  "theta" = rnorm(1,0,1000),
-  "tau" = rnorm(1,0,0.001) %>% abs()
+  "mu" = rnorm(1,0,10),
+  "theta" = rnorm(1,0,10),
+  "tau" = rnorm(1,0,0.01) %>% abs()
 )
 
 
