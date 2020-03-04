@@ -14,8 +14,8 @@ transformed parameters {
   // epsilon[1] = y[1] - mu;
   epsilon[1] = y[1] - mu;
   for (n in 2:N) {
-    // epsilon[n] = (y[n] - mu - theta * epsilon[n - 1]);
-    epsilon[n] = mu + 1;
+    epsilon[n] = (y[n] - mu - theta * epsilon[n - 1]);
+    // epsilon[n] = mu + 1;
   }
 }
 

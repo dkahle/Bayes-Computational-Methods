@@ -43,7 +43,7 @@ stan_file <- here("time-series", "ma-model", "ma-model.stan")
 ## configure model settings
 ################################################################################
 
-n_chains <- 1
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
