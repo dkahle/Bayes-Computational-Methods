@@ -18,7 +18,7 @@ source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomia
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-bugs.R"))
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-nimble.R"))
 source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-stan.R"))
-source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-greta.R"))
+# source(here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-greta.R"))
 
 options("bayes_benchmark" = FALSE)
 
@@ -31,7 +31,7 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 1 # Number of times you want to benchmark each model\
+num_iterations <- 5 # Number of times you want to benchmark each model\
 
 rds_file_location <- here("simple-models", "discrete", "binomial", "beta-prior", "beta-binomial.rds")
 

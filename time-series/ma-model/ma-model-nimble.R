@@ -39,7 +39,7 @@ nimble_model <- nimbleCode({
   epsilon[1] <- y[1] - mu
   for (i in 2:N) {
     epsilon[i] <- y[i] - mu - theta * epsilon[i - 1]
-    y_hat[i] <- mu + theta * epsilon [i - 1]
+    y_hat[i] <- mu + theta * epsilon[i - 1]
     y[i] ~ dnorm(y_hat[i], tau)
   }
   mu ~ dnorm(0,0.0001)
@@ -59,9 +59,9 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 nimble_inits <- list(
-  "mu" = rnorm(1,0,1000),
-  "theta" = rnorm(1,0,1000),
-  "tau" = rnorm(1,0,0.001) %>% abs()
+  "mu" = rnorm(1,0,1),
+  "theta" = rnorm(1,0,1),
+  "tau" = rnorm(1,0,1) %>% abs()
 )
 
 

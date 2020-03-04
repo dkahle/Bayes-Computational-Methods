@@ -25,7 +25,7 @@ ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
 
 
 stan_data <- list(
-  "T" = N,
+  "N" = N,
   "y" = y
 )
 
@@ -43,7 +43,7 @@ stan_file <- here("time-series", "ma-model", "ma-model.stan")
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
+n_chains <- 4
 n_iter <- 1e4L
 n_warmup <- 1e3L
 
@@ -51,11 +51,13 @@ n_warmup <- 1e3L
 
 ## fit model
 ################################################################################
-if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
-  
+source(here("currently-benchmarking.R"))
+
+if (!currently_benchmarking()) {
   stan_fit <- stan(
     "file" = stan_file, "data" = stan_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup, 
+    "control" = list("adapt_delta" = 0.99)
   )
   
   

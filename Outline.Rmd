@@ -11,7 +11,11 @@ knitr::opts_chunk$set(eval = FALSE)
 ## Outline
 - Introduction to problem and history
   - Bayesian paradigm
-  - How computing fits into bayesian paradigm
+    - Interested in finding the posterior distribution of some parameter(s), given the prior distribution and the sample
+    - Bayes rule
+    - Bayesian Posterior calculation
+    - History of bayesian computation
+      - MCMC
   - Common terms that will be used in rest of paper
   - Provide basic code example
 - General Bayesian computational settings
