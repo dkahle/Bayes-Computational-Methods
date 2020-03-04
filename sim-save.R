@@ -1,6 +1,8 @@
 x <- run_benchmark(rds_file_location)
-ma_model_results <- x
-saveRDS(ma_model_results, file = "ma-model-results.rds")
+hierarchical_logistic_regression_results <- x
+saveRDS(hierarchical_logistic_regression_results, 
+        file = "hierarchical-logistic-regression-results.rds")
+
 x
 
 # readRDS("exponential-gamma-results.rds")

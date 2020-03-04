@@ -21,9 +21,23 @@ In Bayesian statistical inference, we are interested in finding the posterior di
 \end{align*}
 which is the kernel of a $\text{Beta}\left(\sum (x_i) + \alpha, n - \sum (x_i) + \beta \right)$ distribution. Therefore, we can analytically calculate the posterior distribution of $\theta$ as $$p(\theta | x) \sim \text{Beta}\left(\sum (x_i) + \alpha, n - \sum (x_i) + \beta\right).$$
 
-In more complicated scenarios, it is not easy to calculate the posterior distribution of a parameter by hand, and in many cases it is impossible. This is where computing can help us. If we could somehow computationally grab samples from the posterior distribution we are interested in, then we could obtain most of the statistics that we are interested in. Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples of a parameter from a distribution that is approximately equivalent to the target posterior distribution of that parameter. An essential property of any Markov chain is that the distribution of each draw only depends on the most recent value drawn before it. As we keep obtaining draws, each draw is probabilisticly more likely to have come from the target posterior distribution. Based on the convergence properties of MCMC, we can expect each draw to be coming from the real distribution of the parameter we are interested, once we have let the Markov chain run long enough. 
+## Bayesian Computation
 
+In more complicated scenarios, it is not easy to calculate the posterior distribution of a parameter by hand, and in many cases it is impossible. This is where computing can help us. If we could somehow computationally grab samples from the posterior distribution we are interested in, then we could obtain most of the statistics that we are interested in. 
 
+### History of Bayesian computation up to MCMC
+
+### Markov Chain Monte Carlo
+
+Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples of a parameter from a distribution that is approximately equivalent to the target posterior distribution of that parameter. An essential property of any Markov chain is that the distribution of each draw only depends on the most recent value drawn before it. As we keep obtaining draws, each draw is probabilisticly more likely to have come from the target posterior distribution. Based on the convergence properties of MCMC, we can expect each draw to be coming from the real distribution of the parameter we are interested, once we have let the Markov chain run long enough. 
+
+### History up through BUGS (include slice sampling)
+
+### Gibbs Sampler
+
+### HMC
+
+### STAN
 
 
 # Bayesian Samplers

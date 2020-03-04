@@ -49,6 +49,7 @@ knitr::opts_chunk$set(eval = FALSE)
     - Nimble initial values
     - initial values for each 
 - Benchmarking
+  - Explain simulation setup
   - Run time
   - Memory allocation
   - Computational accuracy
