@@ -14,6 +14,8 @@ library("survival")
 
 data(veteran) # load spatial data set
 
+
+
 t <- veteran$time # observed / censored event times
 x <- veteran$trt # single covariate
 not_censored <- veteran$status # indicator variable for those who weren't censored
@@ -22,24 +24,29 @@ N <- length(t)
 
 # Here we create variables that will allow us to handle censored data in the bayes model
 num_uncensored <- sum(not_censored)
+num_censored <- length(t) - num_uncensored
 start_censored <- num_uncensored + 1
-num_censored <- sum(is_censored)
 t <- t[order(is_censored)]
 x <- x[order(is_censored)]
 t_censor <- t
-
-t_censor <- t[start_censored:N]
-t <- t[1:num_uncensored]
-x_c <- x[start_censored:N]
-x <- x[1:num_uncensored]
+t[start_censored:N] <- NA
 
 stan_data <- list(
   "t" = t,
   "t_censor" = t_censor,
   "x" = x,
-  "x_c" = x_c,
   "num_uncensored" = num_uncensored,
-  "num_censored" = num_censored
+  "start_censored" = num_uncensored + 1,
+  "N" = length(t)
+)
+
+stan_data <- list(
+  "t" = t[1:num_uncensored],
+  "t_censor" = t_censor[(num_uncensored + 1):length(t)],
+  "x" = x,
+  "num_uncensored" = num_uncensored,
+  "num_censored" = length(t) - num_uncensored,
+  "N" = length(t)
 )
 
 
@@ -62,13 +69,9 @@ n_iter <- 1e4L
 n_warmup <- 1e3L
 
 
-t_inits <- t_censor + 1
-stan_inits <- list(
-  list("t_u" = t_inits),
-  list("t_u" = t_inits),
-  list("t_u" = t_inits),
-  list("t_u" = t_inits)
-)
+t_inits <- stan_data$t_censor + 1
+stan_inits <- replicate(4,list("t_c" = t_inits), simplify = FALSE)
+
 ## fit model
 ################################################################################
 source(here("currently-benchmarking.R"))

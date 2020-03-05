@@ -306,6 +306,9 @@ real<lower=0> tau;
 # Model block specification
 tau ~ normal(0,1);
 
+# Alternative solution
+tau ~ normal(0,1) T[0,]
+
 ```
 
 ##### Flat Priors

@@ -16,23 +16,24 @@ library("survival")
 
 data(veteran) # load spatial data set
 
-t <- veteran$time # observed / censored event times
-x <- veteran$trt # single covariate
-not_censored <- veteran$status # indicator variable for those who weren't censored
-is_censored <- 1 - not_censored # indicator variable for those who were censored
-
-# Here we create variables that will allow us to handle censored data in the bayes model
-t_censor <- t + not_censored
-t[not_censored == 0] <- NA
-
-
-jags_data <- list(
-  "t" = t,
-  "x" = x,
-  "t_censor" = t_censor,
-  "is_censored" = is_censored,
-  "N" = length(t)
-)
+# t <- veteran$time # observed / censored event times
+# x <- veteran$trt # single covariate
+# not_censored <- veteran$status # indicator variable for those who weren't censored
+# not_censored <- rep(1, length(not_censored))
+# is_censored <- 1 - not_censored # indicator variable for those who were censored
+# 
+# # Here we create variables that will allow us to handle censored data in the bayes model
+# t_censor <- t + not_censored
+# t[not_censored == 0] <- NA
+# 
+# 
+# jags_data <- list(
+#   "t" = t,
+#   "x" = x,
+#   "t_censor" = t_censor,
+#   "is_censored" = is_censored,
+#   "N" = length(t)
+# )
 
 t <- veteran$time # observed / censored event times
 x <- veteran$trt # single covariate
@@ -62,16 +63,16 @@ jags_data <- list(
 ## specify jags model
 ################################################################################
 
-jags_model <- "
-  model{
-    for (i in 1:N) {
-      is_censored[i] ~ dinterval(t[i], t_censor[i])
-      lambda[i] <- exp(beta * x[i])
-      t[i] ~ dexp(lambda[i])
-    }
-    beta ~ dnorm(0,0.0001)
-  }
-"
+# jags_model <- "
+#   model{
+#     for (i in 1:N) {
+#       is_censored[i] ~ dinterval(t[i], t_censor[i])
+#       lambda[i] <- exp(beta * x[i])
+#       t[i] ~ dexp(lambda[i])
+#     }
+#     beta ~ dnorm(0,0.0001)
+#   }
+# "
 
 jags_model <- "
   model{
