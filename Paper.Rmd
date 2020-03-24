@@ -29,15 +29,74 @@ In more complicated scenarios, it is not easy to calculate the posterior distrib
 
 ### Markov Chain Monte Carlo
 
-Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples of a parameter from a distribution that is approximately equivalent to the target posterior distribution of that parameter. An essential property of any Markov chain is that the distribution of each draw only depends on the most recent value drawn before it. As we keep obtaining draws, each draw is probabilisticly more likely to have come from the target posterior distribution. Based on the convergence properties of MCMC, we can expect each draw to be coming from the real distribution of the parameter we are interested, once we have let the Markov chain run long enough. 
+Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples of a parameter from a distribution that is approximately equivalent to the target posterior distribution of that parameter. It is an iterative algorithm, where each realization gets closer to the target density we are interested in. An essential property of any Markov chain is that the distribution of each draw only depends on the most recent value drawn before it. As we keep obtaining draws, each draw is probabilisticly more likely to have come from the target posterior distribution. Based on the convergence properties of MCMC, we can expect each draw to be coming from the real distribution of the parameter we are interested, once we have let the Markov chain run long enough. 
+
+- MCMC is the only suitable method when we don't have a conjugate prior.
 
 ### History up through BUGS (include slice sampling)
 
+- BUGS project began in 1989
+- BUGS language contains for a somewhat concise list of functions and distributions used for specifying relationships between 
+- The BUGS language only has a somewhat limited syntax, but is able to describe extremly complex models using this syntax.
+- While the programs that use BUGS-type language are continually evolving, the syntax has stayed very stable.
+- BUGS language is declarative, which means the order of statements doesn't matter, as opposed to a procedural language.
+- A main initial purpose for the creation of bugs was to allow for graphical models -- models that can be specified through click and point software that creates nodes, or expressing graphics of models that already exist for easier understanding.
+- Six steps in running BUGS models
+  1. Checking syntax of model specification
+  2. Loading data
+  3. Compiling the BUGS model
+  4. Starting the simulation at appropriate initial values
+  5. Simulate unknown parameters
+  6. Gather results and report summary statistics, along with other appropriate output
+- WinBUGS was the first widely used program to utilize the BUGS language. However, OpenBUGS is the more recently maintained version, which communicates better with other software and is more portable. 
+- R2OpenBUGS is the R package that allows for R to interface with OpenBUGS
+- 
+
 ### Gibbs Sampler
+
+- One of most common algorithms for simulating MCMCs.
+- Special case of Metropolis-Hastings alg
+- Generates a multi-dimensional markov chain by splitting the vector of random unknown variables and sampling each subvector one by one, conditional on the most recent values of the other variables.
+- Algorithm: If we have a vector of unknown parameters $\theta$, where $\theta = (\theta_1, \theta_2, \dots, \theta_k)$,
+  1. Choose arbitrary starting values $\theta_1^{(0)}, \theta_2^{(0)}, \dots, \theta_k^{(0)}$ 
+  2. Complete one iteration of the sampler by getting new values for $\theta$ using the following:
+    - Sample a new value for $\theta_1$, from the full conditional distribution of $\theta_1$, given the most recent values of all other elements of $\theta$ and the data:
+    $$\theta_1^{(1)} \sim p(\theta_1 | \theta_2^{(0)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y).$$
+    - Sample a new value $\theta_2^{(1)}$ for the second component of $\theta$, from the full conditional distribution $p(\theta_2 | \theta_1^{(1)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y)$.
+    - Continue this process for the remainder of the $k$ elements of $\theta$.
+  3. Repeat step 2 for the total decided number of iterations that the sampler will run. 
+
+- The Gibbs sampling strategy often allows for sampling from high-dimensional spaces to be simplified to drawing from one-dimensional distributions.
+- Weakness: because it uses a random-walk behavior, if two variables are highly correlated, traversing the space can take a very long time.
+
+### Metropolis
 
 ### HMC
 
+Radford-Neal HMC Chapter:
+- Hamiltonian Monte Carlo uses Hamiltonian Dynamics
+  - Visualize the dynamics as a frictionless puck that slides over a surface of varying height
+    - The state of the system has three elements: position, momentum, and potential energy
+  - The position corresponds to variables of interest
+  - The potential energy will be minus the log of the probability density for these variables
+  - There is one momentum variable for each position variable
+- Using "Hamilton's equations", the movement of the puck is computed. 
+- For computational implementation, these equations must be approximated by discretizing time, using some small stepsize.
+- To use Hamiltonian dynamics to sample from a distribution using MCMC, we need to translate the density function for the distribution to a potential energy function. The variables of interest are now position variables
+- We simulate a markov chain where each iteration resamples the momentum variable associated with each position variable and then does a Metroplis update with the proposal found using Hamiltonian dynamics
+  - Two steps for each iteration:
+    1. New values for the momentum variables are randomly drawn from their Gaussian distribution, independent of the current values of the position variables.
+    2. A metroplis update is performed, using hamiltonian dynamics to propose a new state. The proposed state is either accepted or rejected based on the HMC probability function used. If the proposed state is rejected, the next state is the same as the current one.
+- The HMC algorithm typically will not be trapped in some subset of the state space, which allows for it to always asymptotically converge to the target distribution, and quickly.
+- Tuning Parameters for HMC:
+  - Stepsize - the leapfrog stepsize. Too large, and it will lead to a low acceptance rate for proposed states. Too small and it will be slow computationally.
+  - Trajectory length - 
+
 ### STAN
+STAN 2015
+- Based on a probabilistic programming language that is more flexible and expressive than BUGS/JAGS.
+- Based on HMC
+- Works in command line, Python, and R
 
 
 # Bayesian Samplers
@@ -48,7 +107,7 @@ OpenBugs is the oldest of the Bayesian samplers that we use. OpenBugs is designe
 
 ## JAGS
 
-In terms of model specification, JAGS is very similar to OpenBugs, but works more seemlessly in R using the package \texttt{rjags}. The \texttt{runjags} is an optional package that allows for the JAGS model script to be inputted as a string, and run using the \texttt{run.jags()} function. Since JAGS runs inside \texttt{R} itself, it is very easy to work with. Helpful errors are given when there is an issue with the model code or sampling process. JAGS is often a very fast sampler, especially for less complicated models. 
+In terms of model specification, JAGS is very similar to OpenBugs, but works more seemlessly in R using the package \texttt{rjags}. JAGS was developed independently of OpenBUGS, but uses the BUGS language for most of its model specification syntax. The \texttt{runjags} is an optional package that allows for the JAGS model script to be inputted as a string, and run using the \texttt{run.jags()} function. Since JAGS runs inside \texttt{R} itself, it is very easy to work with. Helpful errors are given when there is an issue with the model code or sampling process. JAGS is often a very fast sampler, especially for less complicated models. 
 
 ## Nimble
 
