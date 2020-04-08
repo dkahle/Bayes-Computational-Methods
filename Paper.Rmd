@@ -121,6 +121,186 @@ STAN is a language in-and-of itself used for statistcal modeling and data analys
 
 Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. It also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions. Greta does offer a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
 
+# Example Model
+
+To illustrate how each bayesian computational method is used in practice, we will demonstrate how to construct a sampler for a simple Beta-Binomial model for each of the five methods we are studying. 
+
+## Data Preparation
+
+First, we need to prepare the data that we will be using.
+
+```{r}
+p <- .25 # binomial p
+n <-  10 # binomial n
+
+set.seed(1)
+
+(y <- rbinom(1, n, p))
+
+model_data <- list(
+  "y" = y,
+  "N" = n
+)
+```
+
+## Model Configuration
+
+Next, we will pick some basic model parameters. Here, we will use four chains, a warmup of 1,000 iterations, and a total iteration count of 10,000.
+
+```{r}
+n_chains <- 4L
+n_iter <- 1e4L
+n_warmup <- 1e3L
+```
+
+
+## OpenBUGS / R2OpenBUGS
+
+When using OpenBUGS through R, we will use the `R2OpenBUGS` library in order to pipe the data and model code into the program rather than using manual entry. This requires the creation of a temporary file that holds the model text that will be used.
+
+```{r}
+## load library
+library(R2OpenBUGS)
+
+## model script code
+bugs_model <- function() {
+  y ~ dbin(p,N)
+  p ~ dbeta(1,1)
+}
+
+## parameters to monitor
+bugs_monitor <- "p"
+
+## temporary model script text file creation
+bugs.file <- file.path(tempdir(), "model.txt")
+write.model(bugs_model, bugs.file)
+
+## run the model
+bugs_fit <- bugs(
+    "model.file" = bugs.file, "data" = model_data, "parameters.to.save" = bugs_monitor, 
+    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup
+)
+```
+
+## JAGS
+
+In JAGS, the model script simply needs to be inputted as a string to the `run.jags()` function.
+```{r}
+## load libraries
+library("rjags"); library("runjags")
+
+## model script code
+jags_model <- "
+  model{
+    y ~ dbin(p,n)
+    p ~ dbeta(1,1)
+  }
+"
+
+## parameters to monitor
+jags_monitor <- c("p")
+
+## run the model
+jags_fit <- run.jags(
+    "model" = jags_model, "data" = model_data, "monitor" = jags_monitor, 
+    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
+) 
+```
+
+## Nimble
+
+An additional step needed when using Nimble, which is to specify initial values for all parameters of interest, since the sampler cannot generate initial values on its own.
+```{r}
+## load library
+library(nimble)
+
+## model script code
+nimble_model <- nimbleCode({
+  y ~ dbin(p,n)
+  p ~ dbeta(1,1)
+})
+
+## parameters to monitor
+nimble_monitor <- c("p")
+
+## specify initial values of parameters
+nimble_inits <- list(
+  "p" = rbeta(1,1,1)
+)
+
+## run the model
+nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = model_data, 
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+)
+```
+
+## STAN
+
+Running models in STAN requires a .stan file which contains the model script code, written in the unique STAN syntax. This can either be a seperate file, or can be inputted as a character string. It is generally recommended to use a seperate .stan file, espcially when using RStudio, which can do syntax highlighting and point out errors in STAN code.
+
+Here is the .stan file for this example, which is saved as "stan_file.stan". Each STAN file contains a data block, parameters block, and model block at a minimum.
+```{r}
+data {
+  int<lower=0> y;
+  int<lower=0> n;
+}
+
+parameters {
+  real p;                
+}
+
+model {
+  y ~ binomial(n,p);
+  p ~ beta(1,1);
+}
+```
+
+The sampler can then be run simply using the `stan()` function call, with the .stan file location specified.
+
+```{r}
+## load library
+library("rstan")
+
+## run the model
+stan_fit <- stan(
+    "file" = "stan_file.stan", "data" = model_data, 
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup, 
+    "control" = list("adapt_delta" = 0.99)
+)
+```
+
+
+## Greta
+
+Each data variable needs to be converted to a greta array before it can be used in the model.
+```{r}
+## convert data into greta arrays
+y <- greta::as_data(y)
+n <- greta::as_data(n)
+```
+
+Next, the priors for each parameter of interested are defined using functions that describe the prior distribution paramter values. The distribution of the response variable given in the data is then described using the `distribution()` function. The model is compiled using the `model()` function, before being sampled by `mcmc()`.
+
+```{r}
+## load library
+library(greta)
+
+## specify prior for parameter(s) of interest
+p <- beta(1,1)
+
+## define distribution of data variable and relationship with parameter
+distribution(y) <- binomial(n,p)
+
+## compile model and run
+greta_model <- model(p)
+greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup,"chains" = n_chains
+)
+```
+
 
 # Common Bayesian Computation Settings
 
@@ -262,6 +442,8 @@ stan_file <- "file.stan"
 stan("file" = stan_file, ... )
 ```
 
+
+
 ## Data Specification and Input
 
 Specifying data for the bayesian samplers in \texttt{R} is very straightforward. In \texttt{OpenBUGS}, \texttt{JAGS}, and \texttt{STAN}, a list containing each data object or constant can be passed to the function that calls the sampler. For example, in \texttt{JAGS}, the data might constructed like this: 
@@ -306,6 +488,27 @@ jags_monitors <- jags_monitor <- c("alpha", "beta")
 run.jags("monitor" = jags_monitor, ... )
 ```
 
+## STAN Probabilty and Sampling Statements
+
+Inside the model block of a stan file, probability statements can be written in the same convention as in other bayesian sampling methods
+
+```{r}
+model{
+  y ~ binomial(n,p);
+  p ~ beta(1,1);
+}
+```
+
+This kind of probability statement does not actually perform any sampling, but is instead tranformed into a statement about the incremental log probability density of a target distribution. The log probability density function can be specified directly. 
+
+```{r}
+model {
+  target += binomial_lpdf(y | n, p);
+  target += beta_lpdf(p | 1, 1);
+}
+```
+
+Either method yields the same result, but in some cases it is advantageous to use the incremental log probability density (or cumulative density) function to get exact log probability values for the model. In general, using the standard sampling statement syntax is preferred since it is easier to understand.
 
 ## Greta's Unique Specification Language
 
