@@ -15,6 +15,25 @@ library("survival")
 
 data(veteran) # load spatial data set
 
+# t <- veteran$time # observed / censored event times
+# x <- veteran$trt # single covariate
+# not_censored <- veteran$status # indicator variable for those who weren't censored
+# not_censored <- rep(1, length(not_censored))
+# is_censored <- 1 - not_censored # indicator variable for those who were censored
+# 
+# # Here we create variables that will allow us to handle censored data in the bayes model
+# t_censor <- t + not_censored
+# t[not_censored == 0] <- NA
+# 
+# 
+# jags_data <- list(
+#   "t" = t,
+#   "x" = x,
+#   "t_censor" = t_censor,
+#   "is_censored" = is_censored,
+#   "N" = length(t)
+# )
+
 t <- veteran$time # observed / censored event times
 x <- veteran$trt # single covariate
 not_censored <- veteran$status # indicator variable for those who weren't censored
@@ -27,7 +46,10 @@ start_censored <- num_uncensored + 1
 t <- t[order(is_censored)]
 x <- x[order(is_censored)]
 t_censor <- t
+t_censor[1:num_uncensored] <- 0
 t[start_censored:N] <- NA
+censored <- rep(0, length(t))
+censored[start_censored:N] <- 1
 
 bugs_data <- list(
   "t" = t,
@@ -35,7 +57,8 @@ bugs_data <- list(
   "x" = x,
   "num_uncensored" = num_uncensored,
   "start_censored" = num_uncensored + 1,
-  "N" = length(t)
+  "N" = length(t),
+  "censored" = censored
 )
 
 
@@ -43,14 +66,7 @@ bugs_data <- list(
 ## specify bugs model
 ################################################################################
 
-bugs_model <- function() {
-  for (i in 1:N) {
-    is_censored[i] ~ dinterval(t[i], t_censor[i])
-    lambda[i] <- exp(beta * x[i])
-    t[i] ~ dexp(lambda[i])
-  }
-  beta ~ dnorm(0,0.0001)
-}
+
 
 bugs_model <- function() {
   for (i in 1:num_uncensored) {
@@ -58,8 +74,9 @@ bugs_model <- function() {
     t[i] ~ dexp(lambda[i])
   }
   for (i in start_censored:N) {
+    censored[i] ~ dinterval(t[i], t_censor[i])
     lambda[i] <- exp(beta * x[i])
-    t[i] ~ dexp(lambda[i]) %_% I(t_censor[i],)
+    t[i] ~ dexp(lambda[i]) 
   }
   beta ~ dnorm(0,0.0001)
 }
