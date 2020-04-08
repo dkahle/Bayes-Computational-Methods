@@ -9,7 +9,7 @@ data {
 
 parameters {
   real beta;
-  real t_c[num_censored];
+  // real t_c[num_censored];
 }
 
 model {
@@ -17,7 +17,9 @@ model {
     t[i] ~ exponential(exp(beta * x[i]));
   }
   for (i in 1:num_censored) {
-    t_c[i] ~ exponential(exp(beta * x[num_uncensored + i])) T[t_censor[i],];
+    // t_c[i] ~ exponential(exp(beta * x[num_uncensored + i])) T[t_censor[i],];
+    target += exponential_lccdf(t_censor[i] | exp(beta * x[num_uncensored + i]));
+    // t_c[i] ~ exponential_cdf(exp(beta * x[num_uncensored + i])) T[t_censor[i],];
   }
   beta ~ normal(0,1000);
 }

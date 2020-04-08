@@ -47,7 +47,10 @@ start_censored <- num_uncensored + 1
 t <- t[order(is_censored)]
 x <- x[order(is_censored)]
 t_censor <- t
+t_censor[1:num_uncensored] <- 0
 t[start_censored:N] <- NA
+censored <- rep(0, length(t))
+censored[start_censored:N] <- 1
 
 jags_data <- list(
   "t" = t,
@@ -55,7 +58,8 @@ jags_data <- list(
   "x" = x,
   "num_uncensored" = num_uncensored,
   "start_censored" = num_uncensored + 1,
-  "N" = length(t)
+  "N" = length(t),
+  "censored" = censored
 )
 
 
@@ -83,6 +87,20 @@ jags_model <- "
     for (i in start_censored:N) {
       lambda[i] <- exp(beta * x[i])
       t[i] ~ dexp(lambda[i]) T(t_censor[i],)
+    }
+    beta ~ dnorm(0,0.0001)
+  }
+"
+jags_model <- "
+  model{
+    for (i in 1:num_uncensored) {
+      lambda[i] <- exp(beta * x[i])
+      t[i] ~ dexp(lambda[i])
+    }
+    for (i in start_censored:N) {
+      censored[i] ~ dinterval(t[i], t_censor[i])
+      lambda[i] <- exp(beta * x[i])
+      t[i] ~ dexp(lambda[i]) 
     }
     beta ~ dnorm(0,0.0001)
   }

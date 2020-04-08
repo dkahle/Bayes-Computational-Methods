@@ -46,11 +46,15 @@ t <- t[order(is_censored)]
 x <- x[order(is_censored)]
 t_censor <- t
 t[start_censored:N] <- NA
+t_censor[1:num_uncensored] <- 0
+censored <- rep(0, length(t))
+censored[start_censored:N] <- 1
 
 nimble_data <- list(
   "t" = t,
   "t_censor" = t_censor,
-  "x" = x
+  "x" = x,
+  "censored" = censored
 )
 
 nimble_constants <- list(
@@ -69,8 +73,9 @@ nimble_model <- nimbleCode({
     t[i] ~ dexp(lambda[i])
   }
   for (i in start_censored:N) {
+    censored[i] ~ dinterval(t[i], t_censor[i])
     lambda[i] <- exp(beta * x[i])
-    t[i] ~ T(dexp(lambda[i]), t_censor[i],)
+    t[i] ~ dexp(lambda[i])
   }
   beta ~ dnorm(0,0.0001)
 })

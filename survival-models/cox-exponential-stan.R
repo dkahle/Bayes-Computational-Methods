@@ -78,7 +78,7 @@ source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   stan_fit <- stan(
-    "file" = stan_file, "data" = stan_data, "init" = stan_inits,
+    "file" = stan_file, "data" = stan_data,# "init" = stan_inits,
     "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup, 
     "control" = list("adapt_delta" = 0.99)
   )
