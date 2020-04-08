@@ -33,7 +33,7 @@ nimble_model <- nimbleCode({
   p ~ dbeta(1,1)
 })
 
-nimble_monitor = c("p")
+nimble_monitor <- c("p")
 
 ## configure model settings
 ################################################################################

@@ -1,6 +1,8 @@
 x <- run_benchmark(rds_file_location)
-ma_model_results <- x
-saveRDS(ma_model_results, file = "ma-model-results.rds")
+cox_exponential_results <- x
+saveRDS(cox_exponential_results, 
+        file = "cox-exponential-results.rds")
+
 x
 
 # readRDS("exponential-gamma-results.rds")

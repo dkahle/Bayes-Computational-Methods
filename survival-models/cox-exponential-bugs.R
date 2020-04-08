@@ -15,22 +15,50 @@ library("survival")
 
 data(veteran) # load spatial data set
 
+# t <- veteran$time # observed / censored event times
+# x <- veteran$trt # single covariate
+# not_censored <- veteran$status # indicator variable for those who weren't censored
+# not_censored <- rep(1, length(not_censored))
+# is_censored <- 1 - not_censored # indicator variable for those who were censored
+# 
+# # Here we create variables that will allow us to handle censored data in the bayes model
+# t_censor <- t + not_censored
+# t[not_censored == 0] <- NA
+# 
+# 
+# jags_data <- list(
+#   "t" = t,
+#   "x" = x,
+#   "t_censor" = t_censor,
+#   "is_censored" = is_censored,
+#   "N" = length(t)
+# )
+
 t <- veteran$time # observed / censored event times
 x <- veteran$trt # single covariate
 not_censored <- veteran$status # indicator variable for those who weren't censored
-is_censored <- 1 - status # indicator variable for those who were censored
+is_censored <- 1 - not_censored # indicator variable for those who were censored
+N <- length(t)
 
 # Here we create variables that will allow us to handle censored data in the bayes model
-t_censor <- t + status
-t[status == 0] <- NA
-
+num_uncensored <- sum(not_censored)
+start_censored <- num_uncensored + 1
+t <- t[order(is_censored)]
+x <- x[order(is_censored)]
+t_censor <- t
+t_censor[1:num_uncensored] <- 0
+t[start_censored:N] <- NA
+censored <- rep(0, length(t))
+censored[start_censored:N] <- 1
 
 bugs_data <- list(
   "t" = t,
-  "x" = x,
   "t_censor" = t_censor,
-  "is_censored" = is_censored,
-  "N" = length(t)
+  "x" = x,
+  "num_uncensored" = num_uncensored,
+  "start_censored" = num_uncensored + 1,
+  "N" = length(t),
+  "censored" = censored
 )
 
 
@@ -38,19 +66,17 @@ bugs_data <- list(
 ## specify bugs model
 ################################################################################
 
+
+
 bugs_model <- function() {
-  for (i in 1:N) {
-    is_censored[i] ~ dinterval(t[i], t_censor[i])
+  for (i in 1:num_uncensored) {
     lambda[i] <- exp(beta * x[i])
     t[i] ~ dexp(lambda[i])
   }
-  beta ~ dnorm(0,0.0001)
-}
-
-bugs_model <- function() {
-  for (i in 1:N) {
+  for (i in start_censored:N) {
+    # censored[i] ~ dinterval(t[i], t_censor[i])
     lambda[i] <- exp(beta * x[i])
-    t[i] ~ dexp(lambda[i]) %_% I(t_censor[i], )
+    t[i] ~ dexp(lambda[i]) %_% I(t_censor[i],)
   }
   beta ~ dnorm(0,0.0001)
 }
@@ -79,13 +105,13 @@ if (getwd() == "/Users/evanmiyakawa/hubiC/Git Projects/Bayes-Computational-Metho
 ## configure model settings
 ################################################################################
 
-n_chains <- 1L
-n_iter <- 5000
-n_warmup <- 1000
+n_chains <- 4L
+n_iter <- 1e4L
+n_warmup <- 1e3L
 
-t_inits <- veteran$time + 1
-t_inits[status == 1] <- NA
-bugs_inits <- replicate(n_chains, list("t" = t_inits), simplify = FALSE)
+t_inits <- t_censor + 1
+t_inits[1:num_uncensored] <- NA
+bugs_inits <- replicate(4,list("t" = t_inits), simplify = FALSE)
 
 
 ## fit model
@@ -97,7 +123,7 @@ if (!currently_benchmarking()) {
     "model.file" = bugs.file, "data" = bugs_data,  "parameters.to.save" = bugs_monitor, 
     "inits" = bugs_inits, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
     "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-    "useWINE" = T
+    "useWINE" = T, debug = F
   )
   
   
