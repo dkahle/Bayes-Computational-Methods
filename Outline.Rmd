@@ -48,6 +48,7 @@ knitr::opts_chunk$set(eval = FALSE)
     - Nimble constants
     - Nimble initial values
     - initial values for each 
+    - STAN can't handle NAs (DO THIS)
 - Benchmarking
   - Explain simulation setup
   - Run time

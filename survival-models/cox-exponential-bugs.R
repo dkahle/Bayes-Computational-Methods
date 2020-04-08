@@ -74,9 +74,9 @@ bugs_model <- function() {
     t[i] ~ dexp(lambda[i])
   }
   for (i in start_censored:N) {
-    censored[i] ~ dinterval(t[i], t_censor[i])
+    # censored[i] ~ dinterval(t[i], t_censor[i])
     lambda[i] <- exp(beta * x[i])
-    t[i] ~ dexp(lambda[i]) 
+    t[i] ~ dexp(lambda[i]) %_% I(t_censor[i],)
   }
   beta ~ dnorm(0,0.0001)
 }
