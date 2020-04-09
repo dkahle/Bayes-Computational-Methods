@@ -41,5 +41,6 @@ source(here("benchmark-function.R"))
 # choose to include stan compilation time with argument "stan_compile = TRUE"
 run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
+run_benchmark(rds_file_location, stan_compile = TRUE, stan_only = TRUE)
 
 
