@@ -71,32 +71,38 @@ Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows
 
 ### Metropolis
 
-### HMC
+### Hamiltonian Monte Carlo
 
-Radford-Neal HMC Chapter:
-- Hamiltonian Monte Carlo uses Hamiltonian Dynamics
-  - Visualize the dynamics as a frictionless puck that slides over a surface of varying height
-    - The state of the system has three elements: position, momentum, and potential energy
-  - The position corresponds to variables of interest
-  - The potential energy will be minus the log of the probability density for these variables
-  - There is one momentum variable for each position variable
-- Using "Hamilton's equations", the movement of the puck is computed. 
-- For computational implementation, these equations must be approximated by discretizing time, using some small stepsize.
-- To use Hamiltonian dynamics to sample from a distribution using MCMC, we need to translate the density function for the distribution to a potential energy function. The variables of interest are now position variables
-- We simulate a markov chain where each iteration resamples the momentum variable associated with each position variable and then does a Metroplis update with the proposal found using Hamiltonian dynamics
-  - Two steps for each iteration:
-    1. New values for the momentum variables are randomly drawn from their Gaussian distribution, independent of the current values of the position variables.
-    2. A metroplis update is performed, using hamiltonian dynamics to propose a new state. The proposed state is either accepted or rejected based on the HMC probability function used. If the proposed state is rejected, the next state is the same as the current one.
-- The HMC algorithm typically will not be trapped in some subset of the state space, which allows for it to always asymptotically converge to the target distribution, and quickly.
-- Tuning Parameters for HMC:
-  - Stepsize - the leapfrog stepsize. Too large, and it will lead to a low acceptance rate for proposed states. Too small and it will be slow computationally.
-  - Trajectory length - 
+A main of objective of Hamiltonian Monte Carlo is to use the geometry of the typical set to help us know where to sample from, instead of blindly using a guess-and-check method (Betancourt HMC Youtube talk). This method utilizes Hamiltonian Dynamics, which is a physics system that has three elements: position, momentum, and potential energy variables. To use Hamiltonian Dynamics to traverse the typical set we are interested in, each parameters of interest is transformed into a position variable, which can be visualized as a frictionless puck sliding over a surface of varying height. Each position variable $p$ has an associated momentum variable $q$ that defines the direction and magnitude of the movement of the "puck". At any given time, the value of the parameter can be found as the position of $p$ in some dimension. 
+
+We define the joint probability of the position $p$ and momentum $q$ as $\pi(q,p) = \pi(q|p) \pi(p)$. This structure allows us at anytime to throw out $q$ and recover the value of $p$, which iholds the position values of the parameter(s). The Hamiltonian is defined as 
+
+\begin{align*}
+  H(q,p) &= -\log \pi (p|q) \pi(q) \\
+   &= -\log \pi (p|q) - log \pi(q) \\
+   &= - K - V,\\
+\end{align*}
+where $K$ is potential energy and $V$ is kinetic energy. Taking partial derivatives of the Hamiltonian yields Hamilton's equations, which is where we obtain our vector field.
+
+\begin{align*}
+  \frac{dq}{dt} &= \frac{\partial K}{\partial p} \\ 
+  \frac{dp}{dt} &= - \frac{\partial K}{\partial q} - \frac{\partial V}{\partial q}.
+\end{align*}
+
+Hamiltonian Dynamics can be used to sample from the target distribution by translating the density function of the distribution to a potential energy function, and obtaining position variables (and associated momentum variables) for parameters of interest. We can simulate a markov chain where each iteration consists of the following steps:
+
+1. New values for the momentum variables are randomly drawn from their Gaussian distribution, independent of the current values of the position variables
+2. A metropolis update is performed, using hamiltonian dynamics to propose a new state for the position variables. The proposed state is either accepted or rejected based on the Hamiltonian Monte Carlo probability function used. If the proposed state is rejected, the next state is the same as the current one.
+
+Hamiltonian Monte Carlo methods are very robust, in that the markov chains seldom get caught in complex regions of the posterior compared to other common MCMC methods. When the chains do get caught, the HMC chains break so obviously that errors can be easily spotted and reported to the user.
+  
 
 ### STAN
 STAN 2015
 - Based on a probabilistic programming language that is more flexible and expressive than BUGS/JAGS.
 - Based on HMC
 - Works in command line, Python, and R
+- "STAN is a platform for Bayesian inference that tries to abstract as much computation away as possible, so users can focus on building complex models"
 
 
 # Bayesian Samplers
