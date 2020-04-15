@@ -33,43 +33,39 @@ Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows
 
 - MCMC is the only suitable method when we don't have a conjugate prior.
 
-### History up through BUGS (include slice sampling)
 
-- BUGS project began in 1989
-- BUGS language contains for a somewhat concise list of functions and distributions used for specifying relationships between 
-- The BUGS language only has a somewhat limited syntax, but is able to describe extremly complex models using this syntax.
-- While the programs that use BUGS-type language are continually evolving, the syntax has stayed very stable.
-- BUGS language is declarative, which means the order of statements doesn't matter, as opposed to a procedural language.
-- A main initial purpose for the creation of bugs was to allow for graphical models -- models that can be specified through click and point software that creates nodes, or expressing graphics of models that already exist for easier understanding.
-- Six steps in running BUGS models
-  1. Checking syntax of model specification
-  2. Loading data
-  3. Compiling the BUGS model
-  4. Starting the simulation at appropriate initial values
-  5. Simulate unknown parameters
-  6. Gather results and report summary statistics, along with other appropriate output
-- WinBUGS was the first widely used program to utilize the BUGS language. However, OpenBUGS is the more recently maintained version, which communicates better with other software and is more portable. 
-- R2OpenBUGS is the R package that allows for R to interface with OpenBUGS
-- 
+### Metropolis-Hastings
 
-### Gibbs Sampler
+### Gibbs Sampling
 
-- One of most common algorithms for simulating MCMCs.
-- Special case of Metropolis-Hastings alg
-- Generates a multi-dimensional markov chain by splitting the vector of random unknown variables and sampling each subvector one by one, conditional on the most recent values of the other variables.
-- Algorithm: If we have a vector of unknown parameters $\theta$, where $\theta = (\theta_1, \theta_2, \dots, \theta_k)$,
-  1. Choose arbitrary starting values $\theta_1^{(0)}, \theta_2^{(0)}, \dots, \theta_k^{(0)}$ 
-  2. Complete one iteration of the sampler by getting new values for $\theta$ using the following:
+Gibbs Sampling is one of the most common Markov Chain Monte Carlo Algorithms used for Bayesian computation. A special case of the Metropolis-Hastings algorithm, a Gibbs sampler works by generating a multi-dimensional markov chain, with one dimension for each unknown variable of interest. By splitting the vector of random unknown variables, the algorithm samples each subvector one by one, conditional on the most recent values of the other variables. 
+
+Lunn et. all outlines the Gibbs sampler algorithm as follows: If we have a vector of unknown parameters $\theta$, where $\theta = (\theta_1, \theta_2, \dots, \theta_k)$, then
+
+1. Choose arbitrary starting values $\theta_1^{(0)}, \theta_2^{(0)}, \dots, \theta_k^{(0)}$ 
+2. Complete one iteration of the sampler by getting new values for $\theta$ using the following:
     - Sample a new value for $\theta_1$, from the full conditional distribution of $\theta_1$, given the most recent values of all other elements of $\theta$ and the data:
     $$\theta_1^{(1)} \sim p(\theta_1 | \theta_2^{(0)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y).$$
     - Sample a new value $\theta_2^{(1)}$ for the second component of $\theta$, from the full conditional distribution $p(\theta_2 | \theta_1^{(1)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y)$.
     - Continue this process for the remainder of the $k$ elements of $\theta$.
-  3. Repeat step 2 for the total decided number of iterations that the sampler will run. 
+3. Repeat step 2 for the total decided number of iterations that the sampler will run. 
 
-- The Gibbs sampling strategy often allows for sampling from high-dimensional spaces to be simplified to drawing from one-dimensional distributions.
-- Weakness: because it uses a random-walk behavior, if two variables are highly correlated, traversing the space can take a very long time.
+The beauty of the Gibbs sampling strategy is that, no matter how complex the space of the posterior distribution is, sampling from these high-dimensional spaces can be broken down into more straightforward draws from one-dimensional distributions. The downside of this approach is that, in high-dimensional settings, it may take a very long time to sample from each conditional one-dimensional distribution in order to reach convergence. Furthermore, because the Gibbs sampler uses a random-walk behavior, if several variables are highly correlated, traversing the space can take a very high amount of iterations because the step-size needs to be small in order to not step outside the target distribution. 
 
-### Metropolis
+### BUGS
+
+The BUGS project, which stands for Bayesian inference Using Gibbs Sampling, began in 1989 in an effort to create a program that utilized MCMC to approximate draws from the posterior distribution in a Bayesian framework. The BUGS language has functions and distributions that allow for specifying relationship between different "nodes" in a bayesian model. While the language itself has a somewhat limited syntax, it is able to describe a very diverse and complex set of models. The BUGS language is declarative, meaning that the order of statements in a model script does not matter since the entire script is evaluated at once, instead of line-by-line in a procedural language. 
+
+Many different programs have been developed that utilize the BUGS syntax to accomplish bayesian sampling, and while these programs have continually evolved, the BUGS syntax has remained very consistent. The Windows program WinBUGS was created by the inventors of the BUGS language, and was a more popular choice for bayesian computation until it became deprecated in 2007. OpenBUGS is now more commonly used in place of WinBUGS, although it's last stable release was in 2014. OpenBUGS communicates better with other software than WinBUGS and is more portable. 
+
+In general, there are six steps needed to run bayesian models in WinBUGS/OpenBUGS:
+
+1. Specify the model through BUGS syntax and check to make sure the model code is valid.
+2. Load the appropriate data.
+3. Compiling the BUGS model.
+4. Start the simulation at appropriate initial values for the Markov chains.
+5. Simulate draws from the posterior distributions of the unknown parameters of interest.
+6. Gather the results and report summary statistics, along with other appropriate output.
 
 ### Hamiltonian Monte Carlo
 
