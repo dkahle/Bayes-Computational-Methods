@@ -1,7 +1,7 @@
-x <- run_benchmark(rds_file_location)
-cox_exponential_results <- x
-saveRDS(cox_exponential_results, 
-        file = "cox-exponential-results.rds")
+x <- run_benchmark(rds_file_location, stan_compile = TRUE, stan_only = TRUE)
+poisson_gamma_results_stan <- x
+saveRDS(poisson_gamma_results_stan, 
+        file = "poisson-gamma-results-stan.rds")
 
 x
 
