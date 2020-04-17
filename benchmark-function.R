@@ -39,7 +39,8 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE, stan_only = F
       file.rename(original_location, new_location)
       
       bench_results_stan_compile <- mark(
-        "stan_compile" = stan_model("file" = stan_file),
+        "stan_compile" = stan_model("file" = stan_file,
+                                    "auto_write" = FALSE),
         "check" = FALSE, 
         "iterations" = num_iterations, 
         "filter_gc" = FALSE
