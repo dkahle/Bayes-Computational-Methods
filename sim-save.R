@@ -1,7 +1,8 @@
-x <- run_benchmark(rds_file_location, stan_compile = TRUE, stan_only = TRUE)
-poisson_gamma_results_stan <- x
-saveRDS(poisson_gamma_results_stan, 
-        file = "poisson-gamma-results-stan.rds")
+x <- run_benchmark(rds_file_location, stan_only = TRUE, stan_compile = TRUE)
+x <- run_benchmark(rds_file_location)
+
+saveRDS(x, 
+        file = "ar-model-results-no-nimble.rds")
 
 x
 
