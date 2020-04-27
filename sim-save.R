@@ -1,7 +1,8 @@
+x <- run_benchmark(rds_file_location, stan_only = TRUE, stan_compile = TRUE)
 x <- run_benchmark(rds_file_location)
-cox_exponential_results <- x
-saveRDS(cox_exponential_results, 
-        file = "cox-exponential-results.rds")
+
+saveRDS(x, 
+        file = "ar-model-results-no-nimble.rds")
 
 x
 
