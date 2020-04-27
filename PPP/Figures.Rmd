@@ -1,0 +1,247 @@
+---
+title: "Figures"
+author: "Evan Miyakawa"
+output: pdf_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+
+
+
+```
+
+```{r}
+library(tidyverse); options(tibble.width = Inf)
+library(magrittr)
+library("greta")
+```
+
+
+```{r}
+set.seed(2)
+
+df <- tibble(x = rnorm(750, mean = 50, sd = 25), y = rnorm(750, mean = x * 1.2, sd = 5))
+
+df %>% ggplot(aes(x,y)) +
+  geom_point(alpha = 0.7) + 
+  theme_minimal() + 
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  )
+```
+
+
+```{r}
+set.seed(2)
+
+df <- tibble(x = rnorm(750, mean = 50, sd = 25), y = rnorm(750, mean = x * 1.2, sd = 5))
+
+df %>% ggplot(aes(x,y)) +
+  geom_point(alpha = 0.3) + 
+  theme_minimal() + 
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  )
+```
+
+```{r, fig.height = 3}
+
+log_df <- tibble(x = seq(-4,4,length.out = 100), d_norm = - dnorm(x))
+
+log_df %>% ggplot(aes(x,d_norm)) + 
+  geom_line(size = 2) + 
+  theme_minimal() + 
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  )
+  
+
+```
+
+```{r}
+
+## generate/specify data
+################################################################################
+
+alpha <- 2 #beta distribution alpha
+beta <- 1 #beta distribution beta
+N <- 10 # sample size
+
+set.seed(1)
+
+n <- rbinom(N, 20, 0.5)
+theta <- rbeta(N, alpha, beta)
+y <- rbinom(N, n, theta)
+
+n <- as_data(n)
+y <- as_data(y)
+
+## specify greta model
+################################################################################
+
+theta <- beta(2,1, dim = c(N,1))
+distribution(y) <- binomial(n, theta, dim = c(N,1))
+
+greta_model <- model(theta)
+
+plot(greta_model)
+
+
+```
+
+```{r, eval = FALSE}
+p <- .25 # binomial p 
+n <- 10 # binomial n
+
+set.seed(1)
+
+(y <- rbinom(1, n, p))
+
+model_data <- list(
+  "y" = y,
+  "N" = n 
+)
+```
+
+```{r, eval = FALSE}
+n_chains <- 4L
+n_iter <- 1e4L
+n_warmup <- 1e3L
+```
+
+```{r, eval = FALSE}
+## load library
+library(R2OpenBUGS)
+
+## model script code
+bugs_model <- function() {
+  y ~ dbin(p,N)
+  p ~ dbeta(1,1)
+}
+
+## parameters to monitor
+bugs_monitor <- "p"
+
+## temporary model script text file creation
+bugs.file <- file.path(tempdir(), "model.txt")
+write.model(bugs_model, bugs.file)
+
+## run the model
+bugs_fit <- bugs(
+    "model.file" = bugs.file, "data" = model_data, "parameters.to.save" = bugs_monitor, 
+    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup
+)
+```
+
+```{r, eval = FALSE}
+## load libraries
+library("rjags"); library("runjags")
+
+## model script code
+jags_model <- "
+  model{
+    y ~ dbin(p,n)
+    p ~ dbeta(1,1)
+  }
+"
+
+## parameters to monitor
+jags_monitor <- c("p")
+
+## run the model
+jags_fit <- run.jags(
+    "model" = jags_model, "data" = model_data, "monitor" = jags_monitor, 
+    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
+) 
+```
+
+```{r, eval = FALSE}
+## load library
+library(nimble)
+
+## model script code
+nimble_model <- nimbleCode({
+  y ~ dbin(p,n)
+  p ~ dbeta(1,1)
+})
+
+## parameters to monitor
+nimble_monitor <- c("p")
+
+## specify initial values of parameters
+nimble_inits <- list(
+  "p" = rbeta(1,1,1)
+)
+
+## run the model
+nimble_fit <- nimbleMCMC(
+    "code" = nimble_model, "data" = model_data, 
+    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+)
+```
+
+```{r, eval = FALSE}
+## .stan file
+
+data {
+  int<lower=0> y;
+  int<lower=0> n;
+}
+
+parameters {
+  real p;                
+}
+
+model {
+  y ~ binomial(n,p);
+  p ~ beta(1,1);
+}
+```
+
+```{r, eval = FALSE}
+## load library
+library("rstan")
+
+## run the model
+stan_fit <- stan(
+    "file" = "stan_file.stan", "data" = model_data, 
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+)
+
+```
+
+```{r, eval = FALSE}
+## convert data into greta arrays
+y <- greta::as_data(y)
+n <- greta::as_data(n)
+```
+
+```{r}
+## load library
+library(greta)
+
+## specify prior for parameter(s) of interest
+p <- beta(1,1)
+
+## define distribution of data variable and relationship with parameter
+distribution(y) <- binomial(n,p)
+
+## compile model and run
+greta_model <- model(p)
+
+```
+
+```{r, eval = FALSE}
+greta_fit <- mcmc(
+    "model" = greta_model, "n_samples" = n_iter,
+    "warmup" = n_warmup,"chains" = n_chains
+)
+
+```
+

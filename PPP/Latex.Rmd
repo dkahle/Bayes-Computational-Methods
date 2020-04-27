@@ -1,0 +1,37 @@
+---
+title: "Latex"
+author: "Evan Miyakawa"
+date: "4/17/2020"
+output: pdf_document
+header-includes:
+   - \usepackage{xcolor}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+$$ p(\theta | x) = \frac{p(x | \theta) p(\theta)}{p(x)} $$
+
+$$ p(\theta | \textbf{x}) = \frac{\ell(\theta | \textbf{x}) \pi(\theta)}{\int{\ell(\theta |\textbf{x}) \pi(\theta) d \theta}}$$
+
+$$ \ell(\theta | \textbf{x})$$
+
+$$  \pi(\theta)$$
+
+$$ p(\theta | \textbf{x}) = \frac{\ell(\theta | \textbf{x}) \pi(\theta)}{\phantom{\int{\ell(\theta |\textbf{x}) \pi(\theta) d \theta}}}$$
+\color{red}
+$$\int \ell(\theta |\textbf{x}) \pi(\theta) d \theta$$
+\color{black}
+
+$$\theta_1^{(1)} \sim p(\theta_1 | \theta_2^{(0)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y)$$
+
+$$\pi(q,p) = \pi(q|p) \pi(p)$$
+
+\begin{align*}
+  H(q,p) &= -\log \pi (p|q) \pi(q) \\
+   &= -\log \pi (p|q) - \log \pi(q) \\
+   &= - K - V\\
+\end{align*}

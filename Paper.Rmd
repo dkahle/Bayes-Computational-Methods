@@ -45,6 +45,7 @@ Lunn et. all outlines the Gibbs sampler algorithm as follows: If we have a vecto
 1. Choose arbitrary starting values $\theta_1^{(0)}, \theta_2^{(0)}, \dots, \theta_k^{(0)}$ 
 2. Complete one iteration of the sampler by getting new values for $\theta$ using the following:
     - Sample a new value for $\theta_1$, from the full conditional distribution of $\theta_1$, given the most recent values of all other elements of $\theta$ and the data:
+    
     $$\theta_1^{(1)} \sim p(\theta_1 | \theta_2^{(0)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y).$$
     - Sample a new value $\theta_2^{(1)}$ for the second component of $\theta$, from the full conditional distribution $p(\theta_2 | \theta_1^{(1)}, \theta_3^{(0)}, \dots , \theta_k^{(0)}, y)$.
     - Continue this process for the remainder of the $k$ elements of $\theta$.
@@ -71,11 +72,11 @@ In general, there are six steps needed to run bayesian models in WinBUGS/OpenBUG
 
 A main of objective of Hamiltonian Monte Carlo is to use the geometry of the typical set to help us know where to sample from, instead of blindly using a guess-and-check method (Betancourt HMC Youtube talk). This method utilizes Hamiltonian Dynamics, which is a physics system that has three elements: position, momentum, and potential energy variables. To use Hamiltonian Dynamics to traverse the typical set we are interested in, each parameters of interest is transformed into a position variable, which can be visualized as a frictionless puck sliding over a surface of varying height. Each position variable $p$ has an associated momentum variable $q$ that defines the direction and magnitude of the movement of the "puck". At any given time, the value of the parameter can be found as the position of $p$ in some dimension. 
 
-We define the joint probability of the position $p$ and momentum $q$ as $\pi(q,p) = \pi(q|p) \pi(p)$. This structure allows us at anytime to throw out $q$ and recover the value of $p$, which iholds the position values of the parameter(s). The Hamiltonian is defined as 
+We define the joint probability of the position $p$ and momentum $q$ as $\pi(q,p) = \pi(q|p) \pi(p)$. This structure allows us at anytime to throw out $q$ and recover the value of $p$, which holds the position values of the parameter(s). The Hamiltonian is defined as 
 
 \begin{align*}
   H(q,p) &= -\log \pi (p|q) \pi(q) \\
-   &= -\log \pi (p|q) - log \pi(q) \\
+   &= -\log \pi (p|q) - \log \pi(q) \\
    &= - K - V,\\
 \end{align*}
 where $K$ is potential energy and $V$ is kinetic energy. Taking partial derivatives of the Hamiltonian yields Hamilton's equations, which is where we obtain our vector field.
@@ -121,7 +122,7 @@ STAN is a language in-and-of itself used for statistcal modeling and data analys
 
 ## Greta
 
-Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. It also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions. Greta does offer a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
+Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. Not only does it utilize Hamiltonian Monte Carlo methods for sampling, but it also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions. Greta does offer a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
 
 # Example Model
 
@@ -268,8 +269,7 @@ library("rstan")
 ## run the model
 stan_fit <- stan(
     "file" = "stan_file.stan", "data" = model_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup, 
-    "control" = list("adapt_delta" = 0.99)
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
 )
 ```
 
