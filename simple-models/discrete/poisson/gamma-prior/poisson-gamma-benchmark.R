@@ -32,7 +32,7 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 5 # Number of times you want to benchmark each model\
+num_iterations <- 1 # Number of times you want to benchmark each model\
 
 rds_file_location <- here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
 
@@ -41,8 +41,6 @@ source(here("benchmark-function.R"))
 # choose to include stan compilation time with argument "stan_compile = TRUE"
 run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
-
-# extra
-x <- run_benchmark(rds_file_location, stan_compile = TRUE, stan_only = TRUE)
+run_benchmark(rds_file_location, stan_compile = TRUE, stan_only = TRUE)
 
 
