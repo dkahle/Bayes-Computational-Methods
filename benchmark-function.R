@@ -26,11 +26,11 @@ run_benchmark <- function(rds_file_location, stan_compile = FALSE, stan_only = F
           "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
           "useWINE" = T
         ),
-        # "nimble_fit" = nimbleMCMC(
-        #   "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
-        #   "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
-        #   "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-        # ),
+        "nimble_fit" = nimbleMCMC(
+          "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
+          "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
+          "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+        ),
         "stan_fit" = stan(
           "file" = stan_file, "data" = stan_data,
           "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,

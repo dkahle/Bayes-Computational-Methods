@@ -19,11 +19,11 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
         "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
         "useWINE" = T
       )
-      nimble_fit <- nimbleMCMC(
-        "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
-        "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
-        "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
-      )
+      # nimble_fit <- nimbleMCMC(
+      #   "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
+      #   "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains,
+      #   "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+      # )
       stan_fit <- stan(
         "file" = stan_file, "data" = stan_data,
         "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
@@ -40,6 +40,7 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
                              jags_fit_object[,2],
                              jags_fit_object[,3],
                              jags_fit_object[,4])
+      bugs_fit_condense <- bugs_fit$sims.matrix[,1]
       stan_fit_object <- stan_fit %>% as.array()
       stan_fit_condense <- c(
         stan_fit_object[,1,1],
@@ -54,12 +55,14 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
                              greta_fit_object[,4])
       
       jags_dist <- TotalVarDist(true_dist,jags_fit_condense)
+      bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
       stan_dist <- TotalVarDist(true_dist,stan_fit_condense)
       greta_dist <- TotalVarDist(true_dist,greta_fit_condense)
       
       tibble(
         iter = iter,
         jags_dist = jags_dist,
+        bugs_dist = bugs_dist,
         stan_dist = stan_dist,
         greta_dist = greta_dist
       )
