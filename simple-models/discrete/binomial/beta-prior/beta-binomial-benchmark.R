@@ -44,7 +44,7 @@ run_benchmark(rds_file_location)
 ## benchmarking accuracy
 ###################################################################################
 
-num_iterations <- 10 # Number of times you want to benchmark each model\
+num_iterations <- 20 # Number of times you want to benchmark each model\
 
 source(here("benchmark-accuracy-function.R"))
 
