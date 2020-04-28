@@ -32,9 +32,8 @@ bugs_data <- list(
 
 bugs_model <- function() {
   for (i in 1:N) {
-    y[i] ~ dnorm(mu, sigma_sq)
+    y[i] ~ dnorm(mu, tau)
   }
-  sigma_sq <- 1 / tau
   mu ~ dnorm(0, 1)
 }
 
