@@ -9,7 +9,7 @@ parameters {
 }
 
 model {
-  y ~ normal(mu,(1 / tau^2));
+  y ~ normal(mu,(1 / sqrt(tau)));
   tau ~ gamma(1,3);
 }
 
