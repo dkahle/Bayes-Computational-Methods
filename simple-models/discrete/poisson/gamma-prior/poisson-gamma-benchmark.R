@@ -32,7 +32,7 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 1 # Number of times you want to benchmark each model\
+num_iterations <- 2 # Number of times you want to benchmark each model\
 
 rds_file_location <- here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma.rds")
 
@@ -50,7 +50,7 @@ num_iterations <- 20 # Number of times you want to benchmark each model\
 
 source(here("benchmark-accuracy-function.R"))
 
-true_dist <- distr::Gamma(7,0.5)
+true_dist <- distr::Gammad(7,0.5)
 
 run_accuracy_benchmark(true_dist,num_iterations, n_iter, n_warmup)
 

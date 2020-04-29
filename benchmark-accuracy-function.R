@@ -13,11 +13,12 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
         "model" = jags_model, "data" = jags_data, "monitor" = jags_monitor,
         "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
       )
+      bugs_seed <- ((iter - 1) %% 14) + 1
       bugs_fit <- bugs(
         "model.file" = bugs.file, "data" = bugs_data, "parameters.to.save" = bugs_monitor,
-        "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup,
+        "inits" = NULL, "n.chains" = n_chains, "n.iter" = (n_iter + n_warmup), "n.burnin" = n_warmup,
         "OpenBUGS.pgm" = OpenBUGS.pgm, "WINE" = WINE, "WINEPATH" = WINEPATH,
-        "useWINE" = T
+        "useWINE" = T, bugs.seed = bugs_seed
       )
       # nimble_fit <- nimbleMCMC(
       #   "code" = nimble_model, "constants" = nimble_constants, "data" = nimble_data,
@@ -26,7 +27,7 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
       # )
       stan_fit <- stan(
         "file" = stan_file, "data" = stan_data,
-        "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup,
+        "chains" = n_chains, "iter" = (n_iter + n_warmup), "warmup" = n_warmup,
         "control" = list("adapt_delta" = 0.99)
       )
       greta_fit <- mcmc(
