@@ -35,3 +35,6 @@ $$\pi(q,p) = \pi(q|p) \pi(p)$$
    &= -\log \pi (p|q) - \log \pi(q) \\
    &= - K - V\\
 \end{align*}
+
+$$\theta_1$$
+$$\theta_2$$

@@ -222,7 +222,7 @@ y <- greta::as_data(y)
 n <- greta::as_data(n)
 ```
 
-```{r}
+```{r, eval = FALSE}
 ## load library
 library(greta)
 
@@ -242,6 +242,22 @@ greta_fit <- mcmc(
     "model" = greta_model, "n_samples" = n_iter,
     "warmup" = n_warmup,"chains" = n_chains
 )
+
+```
+
+```{r}
+typical_df <- tibble(x = seq(-4,4,length.out = 100), d_norm =  dnorm(x))
+
+typical_df %>% ggplot(aes(x,d_norm)) + 
+  annotate("rect", xmin=-1.7, xmax=1.7, ymin=0, ymax=Inf, alpha = 0.5) +
+  # geom_rect(aes(xmin=-1.7, xmax=1.7, ymin=0, ymax=Inf), alpha = 0.3, fill = "gray") +
+  geom_line(size = 2) + 
+  theme_minimal() + 
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  ) + 
+  xlab(expression(pi*"("*theta*")"*" "*d*theta))
 
 ```
 
