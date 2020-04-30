@@ -1,0 +1,114 @@
+---
+title: "Simulation Results"
+author: "Evan Miyakawa"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+library(tidyverse); options(tibble.width = Inf)
+library(magrittr)
+library(here)
+```
+
+
+```{r}
+exp_gamma_bench_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-results.rds"),
+  here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-results-greta.rds"),
+  here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-results-stan.rds")
+)
+
+normal_gamma_tau_bench_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-results.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-results-greta.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-results-stan.rds")
+)
+
+normal_normal_bench_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-results.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-results-greta.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-results-stan.rds")
+)
+
+beta_bernoulli_bench_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-results.rds"),
+  here("Simulation Results", "simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-results-greta.rds"),
+  here("Simulation Results", "simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-results-stan.rds")
+)
+
+beta_binomial_bench_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-results.rds"),
+  here("Simulation Results", "simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-results-greta.rds"),
+  here("Simulation Results", "simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-results-stan.rds")
+)
+
+poisson_gamma_bench_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-results.rds"),
+  here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-results-greta.rds"),
+  here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-results-stan.rds")
+)
+
+combine_bench <- function(files, model_name) {
+  combined_results <- files %>% map_dfr(~ readRDS(.))
+  combined_results
+  
+  expression_string <- combined_results$expression[[7]]
+  expression_string
+  get_method_name <- function(expression_string) {
+    string <- as.character(expression_string)[1]
+    string
+    if (string == "run.jags") {
+      method <- "JAGS"
+    } else if (string == "bugs") {
+      method <- "OpenBUGS"
+    } else if (string == "nimbleMCMC") {
+      method <- "Nimble"
+    } else if (string == "stan") {
+      method <- "STAN"
+    } else if (string == "mcmc") {
+      method <- "Greta"
+    } else if (string == "stan_model") {
+      method <- "STAN Compile"
+    }
+    method
+  }
+  
+  method_names <- combined_results$expression %>% map_chr(get_method_name)
+  
+  method_mean <- combined_results$time %>% map_dbl(~ mean(.))
+  method_sd <- combined_results$time %>% map_dbl(~ sd(.))
+  
+  results <- combined_results %>% 
+    mutate(method = method_names, mean = method_mean, sd = method_sd, 
+           model_name = model_name) %>% 
+    select(method, mean, median, min, sd, n_itr, model_name)
+  
+  rows_to_keep <- results$method %>% unique() %>% 
+    map_dbl(~ which(results$method == .)[1])
+  
+  results <- results[rows_to_keep,] %>% 
+    arrange(method)
+  
+  
+}
+
+exp_gamma_results <- exp_gamma_bench_files %>% 
+  combine_bench("exponential_gamma")
+normal_gamma_tau_results <- normal_gamma_tau_bench_files %>%
+  combine_bench("normal_gamma_tau")
+normal_normal_results <- normal_normal_bench_files %>%
+  combine_bench("normal_normal")
+beta_bernoulli_results <- beta_bernoulli_bench_files %>%
+  combine_bench("beta_bernoulli")
+beta_binomial_results <- beta_binomial_bench_files %>%
+  combine_bench("beta_binomial")
+poisson_gamma_results <- poisson_gamma_bench_files %>%
+  combine_bench("poisson_gamma")
+poisson_gamma_results
+
+
+x <- readRDS(bench_files[3])
+x
+```
+
