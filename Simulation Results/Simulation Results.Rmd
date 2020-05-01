@@ -49,12 +49,57 @@ poisson_gamma_bench_files <- c(
   here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-results-stan.rds")
 )
 
+hierarchical_beta_binomial_bench_files <- c(
+  here("Simulation Results", "hierarchical-models", "beta-binomial", "hierarchical-beta-binomial-results.rds"),
+  here("Simulation Results", "hierarchical-models", "beta-binomial", "hierarchical-beta-binomial-results-greta.rds"),
+  here("Simulation Results", "hierarchical-models", "beta-binomial", "hierarchical-beta-binomial-results-stan.rds")
+)
+
+hierarchical_full_beta_binomial_bench_files <- c(
+  here("Simulation Results", "hierarchical-models", "full-beta-binomial", "hierarchical-full-beta-binomial-results.rds"),
+  here("Simulation Results", "hierarchical-models", "full-beta-binomial", "hierarchical-full-beta-binomial-results-greta.rds"),
+  here("Simulation Results", "hierarchical-models", "full-beta-binomial", "hierarchical-full-beta-binomial-results-stan.rds")
+)
+
+hierarchical_logistic_regression_bench_files <- c(
+  here("Simulation Results", "regression-models", "hierarchical-logistic-regression",  "hierarchical-logistic-regression-results.rds"),
+  here("Simulation Results", "regression-models", "hierarchical-logistic-regression",  "hierarchical-logistic-regression-results-greta.rds"),
+  here("Simulation Results", "regression-models", "hierarchical-logistic-regression",  "hierarchical-logistic-regression-results-stan.rds")
+)
+
+linear_regression_bench_files <- c(
+  here("Simulation Results", "regression-models", "linear-regression",  "linear-regression-results.rds"),
+  here("Simulation Results", "regression-models", "linear-regression",  "linear-regression-results-greta.rds"),
+  here("Simulation Results", "regression-models", "linear-regression",  "linear-regression-results-stan.rds")
+)
+
+logistic_regression_bench_files <- c(
+  here("Simulation Results", "regression-models", "logistic-regression",  "logistic-regression-results.rds"),
+  here("Simulation Results", "regression-models", "logistic-regression",  "logistic-regression-results-greta.rds"),
+  here("Simulation Results", "regression-models", "logistic-regression",  "logistic-regression-results-stan.rds")
+)
+
+poisson_regression_bench_files <- c(
+  here("Simulation Results", "regression-models", "poisson-regression",  "poisson-regression-results.rds"),
+  here("Simulation Results", "regression-models", "poisson-regression",  "poisson-regression-results-greta.rds"),
+  here("Simulation Results", "regression-models", "poisson-regression",  "poisson-regression-results-stan.rds")
+)
+
+cox_exponential_bench_files <- c(
+  here("Simulation Results", "survival-models", "cox-exponential-results.rds"),
+  here("Simulation Results", "survival-models", "cox-exponential-results-greta.rds"),
+  here("Simulation Results", "survival-models", "cox-exponential-results-stan.rds")
+)
+
+
+files <- logistic_regression_bench_files
+
 combine_bench <- function(files, model_name) {
   combined_results <- files %>% map_dfr(~ readRDS(.))
   combined_results
   
-  expression_string <- combined_results$expression[[7]]
-  expression_string
+  # expression_string <- combined_results$expression[[7]]
+  # expression_string
   get_method_name <- function(expression_string) {
     string <- as.character(expression_string)[1]
     string
@@ -93,22 +138,204 @@ combine_bench <- function(files, model_name) {
   
 }
 
+combine_bench_indiv <- function(files, model_name) {
+  combined_results <- files %>% map_dfr(~ readRDS(.))
+  combined_results
+  
+  # expression_string <- combined_results$expression[[7]]
+  # expression_string
+  get_method_name <- function(expression_string) {
+    string <- as.character(expression_string)[1]
+    string
+    if (string == "run.jags") {
+      method <- "JAGS"
+    } else if (string == "bugs") {
+      method <- "OpenBUGS"
+    } else if (string == "nimbleMCMC") {
+      method <- "Nimble"
+    } else if (string == "stan") {
+      method <- "STAN"
+    } else if (string == "mcmc") {
+      method <- "Greta"
+    } else if (string == "stan_model") {
+      method <- "STAN Compile"
+    }
+    method
+  }
+  
+  method_names <- combined_results$expression %>% map_chr(get_method_name)
+  
+  times <- combined_results$time[[1]]
+  
+  time_results <- combined_results$time
+  
+  names(time_results) <- method_names
+  
+  get_iterations_for_method <- function(times, name) {
+    tibble(
+      method = name,
+      time = times,
+      model_name = model_name
+    )
+  }
+  
+  res <- time_results %>% imap_dfr(get_iterations_for_method)
+  
+  # 
+  # method_mean <- combined_results$time %>% map_dbl(~ mean(.))
+  # method_sd <- combined_results$time %>% map_dbl(~ sd(.))
+  # 
+  # results <- combined_results %>% 
+  #   mutate(method = method_names, mean = method_mean, sd = method_sd, 
+  #          model_name = model_name) %>% 
+  #   select(method, mean, median, min, sd, n_itr, model_name)
+  # 
+  # rows_to_keep <- results$method %>% unique() %>% 
+  #   map_dbl(~ which(results$method == .)[1])
+  # 
+  # results <- results[rows_to_keep,] %>% 
+  #   arrange(method)
+  
+  res
+  
+  
+}
+
+# exp_gamma_results <- exp_gamma_bench_files %>% 
+#   combine_bench("exponential_gamma")
+# normal_gamma_tau_results <- normal_gamma_tau_bench_files %>%
+#   combine_bench("normal_gamma_tau")
+# normal_normal_results <- normal_normal_bench_files %>%
+#   combine_bench("normal_normal")
+# beta_bernoulli_results <- beta_bernoulli_bench_files %>%
+#   combine_bench("beta_bernoulli")
+# beta_binomial_results <- beta_binomial_bench_files %>%
+#   combine_bench("beta_binomial")
+# poisson_gamma_results <- poisson_gamma_bench_files %>%
+#   combine_bench("poisson_gamma")
+# hier_beta_binomial_results <- hierarchical_beta_binomial_bench_files %>%
+#   combine_bench("hierarchical_beta_binomial")
+# hier_full_bb_results <- hierarchical_full_beta_binomial_bench_files %>%
+#   combine_bench("hierarchical_full_beta_binomial")
+# hier_log_reg_results <- hierarchical_logistic_regression_bench_files %>%
+#   combine_bench("hierarchical_logistic_regression")
+# linear_reg_results <- linear_regression_bench_files %>% 
+#   combine_bench("linear regression")
+# logistic_reg_results <- logistic_regression_bench_files %>% 
+#   combine_bench("logistic regression")
+# poisson_reg_results <- poisson_regression_bench_files %>% 
+#   combine_bench("poisson regression")
+
 exp_gamma_results <- exp_gamma_bench_files %>% 
-  combine_bench("exponential_gamma")
+  combine_bench_indiv("exponential_gamma")
 normal_gamma_tau_results <- normal_gamma_tau_bench_files %>%
-  combine_bench("normal_gamma_tau")
+  combine_bench_indiv("normal_gamma_tau")
 normal_normal_results <- normal_normal_bench_files %>%
-  combine_bench("normal_normal")
+  combine_bench_indiv("normal_normal")
 beta_bernoulli_results <- beta_bernoulli_bench_files %>%
-  combine_bench("beta_bernoulli")
+  combine_bench_indiv("beta_bernoulli")
 beta_binomial_results <- beta_binomial_bench_files %>%
-  combine_bench("beta_binomial")
+  combine_bench_indiv("beta_binomial")
 poisson_gamma_results <- poisson_gamma_bench_files %>%
-  combine_bench("poisson_gamma")
-poisson_gamma_results
+  combine_bench_indiv("poisson_gamma")
+hier_beta_binomial_results <- hierarchical_beta_binomial_bench_files %>%
+  combine_bench_indiv("hierarchical_beta_binomial")
+hier_full_bb_results <- hierarchical_full_beta_binomial_bench_files %>%
+  combine_bench_indiv("hierarchical_full_beta_binomial")
+hier_log_reg_results <- hierarchical_logistic_regression_bench_files %>%
+  combine_bench_indiv("hierarchical_logistic_regression")
+linear_reg_results <- linear_regression_bench_files %>% 
+  combine_bench_indiv("linear regression")
+logistic_reg_results <- logistic_regression_bench_files %>% 
+  combine_bench_indiv("logistic regression")
+poisson_reg_results <- poisson_regression_bench_files %>% 
+  combine_bench_indiv("poisson regression")
 
 
-x <- readRDS(bench_files[3])
-x
 ```
 
+
+```{r}
+# bench_results <- bind_rows(
+#   exp_gamma_results,
+#   normal_gamma_tau_results,
+#   normal_normal_results,
+#   beta_bernoulli_results, 
+#   beta_binomial_results,
+#   poisson_gamma_results,
+#   hier_beta_binomial_results,
+#   hier_full_bb_results,
+#   hier_log_reg_results,
+#   linear_reg_results,
+#   logistic_reg_results,
+#   poisson_reg_results
+# )
+# 
+# bench_results
+# 
+# saveRDS(bench_results, file = "bench_results.RDS")
+
+bench_results_indiv <- bind_rows(
+  exp_gamma_results,
+  normal_gamma_tau_results,
+  normal_normal_results,
+  beta_bernoulli_results, 
+  beta_binomial_results,
+  poisson_gamma_results,
+  hier_beta_binomial_results,
+  hier_full_bb_results,
+  hier_log_reg_results,
+  linear_reg_results,
+  logistic_reg_results,
+  poisson_reg_results
+)
+
+bench_results_indiv
+
+bench_results_indiv <- bench_results_indiv %>% 
+  filter(!(method == "STAN Compile" & time < 5))
+
+saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
+```
+
+```{r}
+# bench_results %>% 
+#   ggplot(aes(mean, color = method)) + 
+#   geom_boxplot() + 
+#   coord_flip() + 
+#   xlim(0,90)
+# 
+# bench_results %>% 
+#   ggplot(aes(mean, fill = method)) + 
+#   geom_histogram() + 
+#   facet_wrap(vars(method))
+#   # coord_flip() + 
+#   # xlim(0,90)
+
+
+```
+
+```{r}
+bench_results_indiv <- readRDS("bench_results_indiv.RDS")
+
+bench_results_indiv %>%
+  ggplot(aes(time, color = method)) +
+  geom_boxplot() +
+  coord_flip() +
+  xlim(0,90)
+
+bench_results_indiv %>%
+  ggplot(aes(time, fill = method)) +
+  geom_histogram(aes(y = stat(density)), bins = 20) + 
+  # xlim(0,100) +
+  facet_wrap(vars(method))
+
+bench_results_indiv %>%
+  ggplot(aes(time, fill = method)) +
+  geom_histogram(aes(y = stat(density)), bins = 20) + 
+  xlim(0,100) +
+  facet_wrap(vars(method))
+
+```
+
+## 
