@@ -1,0 +1,5 @@
+saveRDS(bugs_fit_condense, file = "bugs_fit_condense_beta_binomial.RDS")
+saveRDS(stan_fit_condense, file = "stan_fit_condense_beta_binomial.RDS")
+saveRDS(jags_fit_condense, file = "jags_fit_condense_beta_binomial.RDS")
+saveRDS(greta_fit_condense, file = "greta_fit_condense_beta_binomial.RDS")
+saveRDS(nimble_fit_condense, file = "nimble_fit_condense_beta_binomial.RDS")

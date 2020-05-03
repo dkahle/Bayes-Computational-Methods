@@ -13,7 +13,7 @@ library("bayesplot")
 
 alpha <- 2 #beta distribution alpha
 beta <- 1 #beta distribution beta
-N <- 1000 # sample size
+N <- 500 # sample size
 
 set.seed(1)
 
