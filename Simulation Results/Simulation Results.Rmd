@@ -338,4 +338,142 @@ bench_results_indiv %>%
 
 ```
 
-## 
+## Accuracy benchmarking
+
+```{r}
+bugs_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
+                                  "discrete", "binomial", "beta-prior", 
+                                  "bugs_fit_condense_beta_binomial.RDS"))
+jags_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
+                                  "discrete", "binomial", "beta-prior", 
+                                  "jags_fit_condense_beta_binomial.RDS"))
+stan_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
+                                  "discrete", "binomial", "beta-prior", 
+                                  "stan_fit_condense_beta_binomial.RDS"))
+greta_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
+                                  "discrete", "binomial", "beta-prior", 
+                                  "greta_fit_condense_beta_binomial.RDS"))
+nimble_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
+                                  "discrete", "binomial", "beta-prior", 
+                                  "nimble_fit_condense_beta_binomial.RDS"))
+dists <- tibble(
+  x = c(bugs_fit_condense, jags_fit_condense, stan_fit_condense, 
+        greta_fit_condense, nimble_fit_condense),
+  method = c(rep("bugs", length(bugs_fit_condense)),
+             rep("jags", length(jags_fit_condense)),
+             rep("stan", length(stan_fit_condense)),
+             rep("greta", length(greta_fit_condense)),
+             rep("nimble", length(nimble_fit_condense))
+             )
+)
+
+dists %>% 
+  ggplot(aes(x, color = method)) + 
+  geom_density(adjust = 2) + 
+  stat_function(fun = dbeta, args = list(3,9), color = "black")
+
+
+tibble(x = bugs_fit_condense) %>% 
+  ggplot(aes(x)) + 
+    geom_density(adjust = 2) + 
+    stat_function(fun = dbeta, args = list(3,9), color = "red")
+
+tibble(x = jags_fit_condense) %>% 
+  ggplot(aes(x)) + 
+    geom_density(adjust = 2) + 
+    stat_function(fun = dbeta, args = list(3,9), color = "red")
+
+tibble(x = stan_fit_condense) %>% 
+  ggplot(aes(x)) + 
+    geom_density(adjust = 2) + 
+    stat_function(fun = dbeta, args = list(3,9), color = "red")
+
+
+```
+
+```{r}
+exp_gamma_acc_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"),
+  here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy-nimble.rds")
+)
+
+normal_gamma_tau_acc_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-accuracy.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "gamma-prior-tau", "normal-gamma-tau-accuracy-nimble.rds")
+)
+
+normal_normal_acc_files <- c(
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy.rds")
+  # here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy-nimble.rds")
+)
+
+beta_bernoulli_acc_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-accuracy.rds"),
+  here("Simulation Results", "simple-models", "discrete", "bernoulli", "beta-prior", "beta-bernoulli-accuracy-nimble.rds")
+)
+
+beta_binomial_acc_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-accuracy.rds"),
+  here("Simulation Results", "simple-models", "discrete", "binomial", "beta-prior", "beta-binomial-accuracy-nimble.rds")
+)
+
+poisson_gamma_acc_files <- c(
+  here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-accuracy.rds"),
+  here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-accuracy-nimble.rds")
+)
+
+files <- normal_normal_acc_files
+model_name <- "poisson_gamma"
+
+combine_time_indiv <- function(files, model_name) {
+  combined_results <- files %>% map_dfc(~ readRDS(.)) %>% 
+    select(-iter, -iter1) %>% 
+    mutate(model = model_name)
+  
+  combined_results
+}
+
+exp_gamma_acc_df <- exp_gamma_acc_files %>% 
+  combine_time_indiv("exponential_gamma")
+normal_gamma_tau_acc_df <- normal_gamma_tau_acc_files %>% 
+  combine_time_indiv("normal_gamma_tau")
+# normal_normal_acc_df <- normal_normal_acc_files %>% 
+#   combine_time_indiv("normal_normal")
+beta_bernoulli_acc_df <- beta_bernoulli_acc_files %>% 
+  combine_time_indiv("beta_bernoulli")
+beta_binomial_acc_df <- beta_binomial_acc_files %>% 
+  combine_time_indiv("beta_binomial")
+poisson_gamma_acc_df <- poisson_gamma_acc_files %>% 
+  combine_time_indiv("poisson_gamma")
+
+time_results <- bind_rows(
+  exp_gamma_acc_df,
+  normal_gamma_tau_acc_df,
+  beta_bernoulli_acc_df,
+  beta_binomial_acc_df,
+  poisson_gamma_acc_df
+)
+
+time_results %>% 
+  pivot_longer(
+    cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    names_to = "method",
+    values_to = "TVD"
+  ) %>% 
+  ggplot(aes(TVD)) + 
+    geom_histogram() + 
+    facet_wrap(facets = "method")
+
+time_results %>% 
+  pivot_longer(
+    cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    names_to = "method",
+    values_to = "TVD"
+  ) %>% 
+  ggplot(aes(TVD)) + 
+    geom_boxplot(aes(color = method)) + 
+    coord_flip() + 
+    xlim(0,0.25)
+
+```
+
