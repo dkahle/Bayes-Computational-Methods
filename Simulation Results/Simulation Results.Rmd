@@ -6,7 +6,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-library(tidyverse); options(tibble.width = Inf)
+library(tidyverse); options(tibble.width = Inf); theme_set(theme_bw())
 library(magrittr)
 library(here)
 ```
@@ -110,11 +110,11 @@ combine_bench <- function(files, model_name) {
     } else if (string == "nimbleMCMC") {
       method <- "Nimble"
     } else if (string == "stan") {
-      method <- "STAN"
+      method <- "Stan"
     } else if (string == "mcmc") {
       method <- "Greta"
     } else if (string == "stan_model") {
-      method <- "STAN Compile"
+      method <- "Stan Compile"
     }
     method
   }
@@ -154,11 +154,11 @@ combine_bench_indiv <- function(files, model_name) {
     } else if (string == "nimbleMCMC") {
       method <- "Nimble"
     } else if (string == "stan") {
-      method <- "STAN"
+      method <- "Stan"
     } else if (string == "mcmc") {
       method <- "Greta"
     } else if (string == "stan_model") {
-      method <- "STAN Compile"
+      method <- "Stan Compile"
     }
     method
   }
@@ -293,9 +293,10 @@ bench_results_indiv <- bind_rows(
 bench_results_indiv
 
 bench_results_indiv <- bench_results_indiv %>% 
-  filter(!(method == "STAN Compile" & time < 5))
+  filter(!(method == "Stan Compile" & time < 5))
 
-saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
+# saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
+# saveRDS(bench_results_indiv, file = "bench_results_indiv2.RDS")
 ```
 
 ```{r}
@@ -316,25 +317,58 @@ saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
 ```
 
 ```{r}
-bench_results_indiv <- readRDS("bench_results_indiv.RDS")
+bench_results_indiv <- readRDS("bench_results_indiv2.RDS")
 
 bench_results_indiv %>%
-  ggplot(aes(time, color = method)) +
-  geom_boxplot() +
-  coord_flip() +
-  xlim(0,90)
+  ggplot(aes(x = method, y = time)) +
+  geom_boxplot(aes(color = method), coef = 2, outlier.size = 0.75) +
+  # geom_boxplot(aes(color = method)) +
+  # coord_flip() +
+  ylim(0,90) +
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan", "Nimble", "Greta", "Stan Compile")) + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5)) + 
+  xlab("Implementation") + 
+  ylab("Completion Time") + 
+  ggtitle("Implementation Completion Time Boxplots")
+  
+  
 
 bench_results_indiv %>%
   ggplot(aes(time, fill = method)) +
   geom_histogram(aes(y = stat(density)), bins = 20) + 
   # xlim(0,100) +
-  facet_wrap(vars(method))
+  facet_wrap(vars(method)) + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle("Implementation Completion Time Histograms") + 
+  xlab("Completion Time") + 
+  ylab("Count Density")
+  
+  
 
 bench_results_indiv %>%
   ggplot(aes(time, fill = method)) +
   geom_histogram(aes(y = stat(density)), bins = 20) + 
   xlim(0,100) +
-  facet_wrap(vars(method))
+  facet_wrap(vars(method)) + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle("Implementation Completion Time Histograms") + 
+  xlab("Completion Time") + 
+  ylab("Count Density")
+
+bench_results_indiv %>%
+  filter(method %in% c("JAGS", "Nimble", "OpenBUGS", "Stan")) %>% 
+  ggplot(aes(time, fill = method)) +
+  geom_histogram(aes(y = stat(density)), bins = 20) + 
+  # xlim(0,100) +
+  facet_wrap(vars(method)) + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle("Implementation Completion Time Histograms") + 
+  xlab("Completion Time") + 
+  ylab("Count Density")
 
 ```
 
@@ -422,13 +456,23 @@ poisson_gamma_acc_files <- c(
   here("Simulation Results", "simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-accuracy-nimble.rds")
 )
 
-files <- normal_normal_acc_files
+files <- poisson_gamma_acc_files
 model_name <- "poisson_gamma"
 
 combine_time_indiv <- function(files, model_name) {
   combined_results <- files %>% map_dfc(~ readRDS(.)) %>% 
     select(-iter, -iter1) %>% 
     mutate(model = model_name)
+  
+  stan_mean <- combined_results$stan_dist %>% mean()
+  
+  combined_results <- combined_results %>% 
+    mutate(JAGS = jags_dist / stan_mean, 
+           OpenBUGS = bugs_dist / stan_mean, 
+           Stan = stan_dist / stan_mean, 
+           Nimble = nimble_dist / stan_mean, 
+           Greta = greta_dist / stan_mean
+           )
   
   combined_results
 }
@@ -456,24 +500,35 @@ time_results <- bind_rows(
 
 time_results %>% 
   pivot_longer(
-    cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
     names_to = "method",
-    values_to = "TVD"
+    values_to = "TVD_Ratio"
   ) %>% 
-  ggplot(aes(TVD)) + 
-    geom_histogram() + 
-    facet_wrap(facets = "method")
+  ggplot(aes(TVD_Ratio)) + 
+    geom_histogram(aes(fill = method)) + 
+    facet_wrap(facets = "method") + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle("Implementation TVD Accuracy Histograms") + 
+  xlab("Implementation") + 
+  ylab("TVD Ratio")
 
 time_results %>% 
   pivot_longer(
-    cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
     names_to = "method",
-    values_to = "TVD"
+    values_to = "TVD_Ratio"
   ) %>% 
-  ggplot(aes(TVD)) + 
+  ggplot(aes(x = method, y = TVD_Ratio)) + 
     geom_boxplot(aes(color = method)) + 
-    coord_flip() + 
-    xlim(0,0.25)
+  ggtitle("Implementation TVD Accuracy Boxplots") + 
+  xlab("Implementation") + 
+  ylab("TVD Ratio") + 
+  scale_x_discrete(limits = c("OpenBUGS", "JAGS", "Nimble", "Stan", "Greta")) + 
+  theme(legend.position="none",
+        plot.title = element_text(hjust = 0.5))
 
 ```
 

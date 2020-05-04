@@ -1,3 +1,6 @@
+library(distr)
+library(distrEx)
+
 jags_dist <- TotalVarDist(true_dist,jags_fit_condense)
 bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
 stan_dist <- TotalVarDist(true_dist,stan_fit_condense)
