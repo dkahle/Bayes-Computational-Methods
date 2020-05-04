@@ -50,9 +50,9 @@ df %>% ggplot(aes(x,y)) +
 
 ```{r, fig.height = 3}
 
-log_df <- tibble(x = seq(-4,4,length.out = 100), d_norm = - dnorm(x))
+log_df <- tibble(x = seq(-4,4,length.out = 100), d_norm = dnorm(x), log_d_norm =  - log(d_norm))
 
-log_df %>% ggplot(aes(x,d_norm)) + 
+log_df %>% ggplot(aes(x,log_d_norm)) + 
   geom_line(size = 2) + 
   theme_minimal() + 
   theme(

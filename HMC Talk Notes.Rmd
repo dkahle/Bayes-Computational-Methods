@@ -1,13 +1,20 @@
 ---
 title: "HMC Talk Notes"
 author: "Evan Miyakawa"
-date: "4/7/2020"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## New Notes 5-4-2020
+
+- Might want to include Hamiltonian equations to explain kinetic and potential energy when then giving the visual illustration
+- Potential energy is specified by the problem, but kinetic energy is not
+- Good illustration might be the project up/down at 36:00 in video
+
+## Old notes
 
 - When you have more complexity than information (like in big data with more variables than observations), having a prior allows us to do inference that we couldn't do otherwise 
 - Doing Bayes is hard because taking integrals is hard. We have to take integrals in Bayes equation

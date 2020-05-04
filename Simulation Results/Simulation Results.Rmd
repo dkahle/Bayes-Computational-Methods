@@ -317,17 +317,18 @@ bench_results_indiv <- bench_results_indiv %>%
 ```
 
 ```{r}
-bench_results_indiv <- readRDS("bench_results_indiv2.RDS")
+bench_results_indiv <- readRDS(here("bench_results_indiv2.RDS"))
 
 bench_results_indiv %>%
   ggplot(aes(x = method, y = time)) +
-  geom_boxplot(aes(color = method), coef = 2, outlier.size = 0.75) +
+  geom_boxplot(aes(color = method), coef = 2, outlier.size = 0.75, size = 0.7) +
   # geom_boxplot(aes(color = method)) +
   # coord_flip() +
   ylim(0,90) +
   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan", "Nimble", "Greta", "Stan Compile")) + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5)) + 
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20)) + 
   xlab("Implementation") + 
   ylab("Completion Time") + 
   ggtitle("Implementation Completion Time Boxplots")
@@ -340,7 +341,8 @@ bench_results_indiv %>%
   # xlim(0,100) +
   facet_wrap(vars(method)) + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5)) + 
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20)) + 
   ggtitle("Implementation Completion Time Histograms") + 
   xlab("Completion Time") + 
   ylab("Count Density")
@@ -353,7 +355,8 @@ bench_results_indiv %>%
   xlim(0,100) +
   facet_wrap(vars(method)) + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5)) + 
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20)) + 
   ggtitle("Implementation Completion Time Histograms") + 
   xlab("Completion Time") + 
   ylab("Count Density")
@@ -365,7 +368,8 @@ bench_results_indiv %>%
   # xlim(0,100) +
   facet_wrap(vars(method)) + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5)) + 
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20)) + 
   ggtitle("Implementation Completion Time Histograms") + 
   xlab("Completion Time") + 
   ylab("Count Density")
@@ -509,7 +513,8 @@ time_results %>%
     geom_histogram(aes(fill = method)) + 
     facet_wrap(facets = "method") + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5)) + 
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20)) + 
   ggtitle("Implementation TVD Accuracy Histograms") + 
   xlab("Implementation") + 
   ylab("TVD Ratio")
@@ -522,13 +527,14 @@ time_results %>%
     values_to = "TVD_Ratio"
   ) %>% 
   ggplot(aes(x = method, y = TVD_Ratio)) + 
-    geom_boxplot(aes(color = method)) + 
+    geom_boxplot(aes(color = method), size = 0.7) + 
   ggtitle("Implementation TVD Accuracy Boxplots") + 
   xlab("Implementation") + 
   ylab("TVD Ratio") + 
   scale_x_discrete(limits = c("OpenBUGS", "JAGS", "Nimble", "Stan", "Greta")) + 
   theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5))
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(size=20))
 
 ```
 
