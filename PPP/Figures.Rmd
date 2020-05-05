@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 ```{r}
 library(tidyverse); options(tibble.width = Inf)
 library(magrittr)
-library("greta")
+
 ```
 
 
@@ -64,6 +64,7 @@ log_df %>% ggplot(aes(x,log_d_norm)) +
 ```
 
 ```{r}
+library("greta")
 
 ## generate/specify data
 ################################################################################
@@ -258,6 +259,102 @@ typical_df %>% ggplot(aes(x,d_norm)) +
     axis.text = element_blank()
   ) + 
   xlab(expression(pi*"("*theta*")"*" "*d*theta))
+
+```
+
+
+```{r}
+set.seed(1)
+n <- 1000
+df <- tibble(x = rnorm(n), y = rnorm(n, sd = 3)) 
+big_n <- 100000
+full_df <- tibble(x = rnorm(big_n), y = rnorm(big_n, sd = 3)) 
+
+
+full_df %>% 
+  ggplot() + 
+  stat_density_2d(aes(x, y, fill = ..level..), geom = "polygon", alpha = 0.5) + 
+  # geom_point(aes(x_data, y_data)) + 
+  scale_fill_distiller(palette=1, direction=1) + 
+  theme(
+    legend.position = 'none',
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  )
+
+
+
+```
+
+<!-- ```{r} -->
+<!-- full_df_with_data <- full_df %>%  -->
+<!--   mutate(x_data = rep(df$x[1], 100000)) %>%  -->
+<!--   mutate(y_data = rep(df$y[1], 100000))  -->
+
+<!-- full_df_with_data %>%  -->
+<!--   ggplot() +  -->
+<!--   stat_density_2d(aes(x, y, fill = ..level..), geom = "polygon", alpha = 0.5) +  -->
+<!--   geom_point(aes(x_data, y_data)) + -->
+<!--   scale_fill_distiller(palette=1, direction=1) +  -->
+<!--   theme( -->
+<!--     legend.position = 'none', -->
+<!--     axis.title = element_blank(), -->
+<!--     axis.text = element_blank() -->
+<!--   ) -->
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- full_df_with_data <- full_df %>%  -->
+<!--   mutate(x_data = c(df$x[3], rep(df$x[1], 100000 - 1))) %>%  -->
+<!--   mutate(y_data = c(df$y[3], rep(df$y[1], 100000 - 1))) -->
+
+<!-- full_df_with_data %>%  -->
+<!--   ggplot() +  -->
+<!--   stat_density_2d(aes(x, y, fill = ..level..), geom = "polygon", alpha = 0.5) +  -->
+<!--   geom_point(aes(x_data, y_data)) + -->
+<!--   scale_fill_distiller(palette=1, direction=1) +  -->
+<!--   theme( -->
+<!--     legend.position = 'none', -->
+<!--     axis.title = element_blank(), -->
+<!--     axis.text = element_blank() -->
+<!--   ) -->
+
+<!-- ``` -->
+
+
+```{r}
+full_df_with_data <- full_df %>% 
+  mutate(x_data = c((df$x / 1.7), rep(0, (100000 - 1000)))) %>% 
+  mutate(y_data = c((df$y / 1.7), rep(0, (100000 - 1000))))
+
+full_df_with_data %>% 
+  ggplot() + 
+  stat_density_2d(aes(x, y, fill = ..level..), geom = "polygon", alpha = 0.5) + 
+  geom_point(aes(x_data, y_data)) +
+  scale_fill_distiller(palette=1, direction=1) + 
+  theme(
+    legend.position = 'none',
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  )
+
+```
+
+```{r}
+full_df_with_data <- full_df %>% 
+  mutate(x_data = c((df$x / 1.7), rep(0, (100000 - 1000)))) %>% 
+  mutate(y_data = c((df$y / 1.7), rep(0, (100000 - 1000))))
+
+full_df_with_data %>% 
+  ggplot() + 
+  geom_point(aes(x_data, y_data)) +
+  theme(
+    legend.position = 'none',
+    axis.title = element_blank(),
+    axis.text = element_blank()
+  ) + 
+  theme_void()
 
 ```
 
