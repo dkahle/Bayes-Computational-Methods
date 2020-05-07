@@ -38,3 +38,5 @@ $$\pi(q,p) = \pi(q|p) \pi(p)$$
 
 $$\theta_1$$
 $$\theta_2$$
+
+$$\delta(P,Q) = \frac{1}{2} \int_\mathbb{R} \left|p(x) - q(x)\right| dx$$

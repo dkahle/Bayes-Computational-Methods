@@ -1,5 +1,24 @@
+library(tidyverse); options(tibble.width = Inf)
+library(magrittr)
+
+
 library(distr)
 library(distrEx)
+
+
+true_dist <- Beta(3,9)
+x <- rbeta(10000, 3,9)
+true_dist <- Norm(0,1)
+x <- rnorm(100000, 0, 1)
+
+x_dist <- TotalVarDist(true_dist, x, asis.smooth.discretize = "asis")
+x_dist
+x_dist <- TotalVarDist(true_dist, x, asis.smooth.discretize = "discretize")
+x_dist
+x_dist <- TotalVarDist(x, true_dist, asis.smooth.discretize = "smooth")
+x_dist
+
+
 
 jags_dist <- TotalVarDist(true_dist,jags_fit_condense)
 bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
