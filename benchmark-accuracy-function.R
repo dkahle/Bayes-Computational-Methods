@@ -5,7 +5,7 @@ library(distrEx)
 # 
 # num_iterations <- 3
 
-run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_warmup = 1e3L, nimble = FALSE) {
+run_accuracy_benchmark <- function(true_dist, true_mean, num_iterations, n_iter = 1e4L, n_warmup = 1e3L, nimble = FALSE) {
   if (!nimble) {
     
     one_iteration <- function(iter) {
@@ -55,17 +55,25 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
                              greta_fit_object[,3],
                              greta_fit_object[,4])
       
-      jags_dist <- TotalVarDist(true_dist,jags_fit_condense)
-      bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
-      stan_dist <- TotalVarDist(true_dist,stan_fit_condense)
-      greta_dist <- TotalVarDist(true_dist,greta_fit_condense)
+      jags_dist <- TotalVarDist(true_dist,jags_fit_condense,
+                                asis.smooth.discretize = "smooth")
+      bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense,
+                                asis.smooth.discretize = "smooth")
+      stan_dist <- TotalVarDist(true_dist,stan_fit_condense,
+                                asis.smooth.discretize = "smooth")
+      greta_dist <- TotalVarDist(true_dist,greta_fit_condense,
+                                 asis.smooth.discretize = "smooth")
       
       tibble(
         iter = iter,
         jags_dist = jags_dist,
         bugs_dist = bugs_dist,
         stan_dist = stan_dist,
-        greta_dist = greta_dist
+        greta_dist = greta_dist,
+        jags_se = (mean(jags_fit_condense) - true_mean) ^ 2,
+        bugs_se = (mean(bugs_fit_condense) - true_mean) ^ 2,
+        stan_se = (mean(stan_fit_condense) - true_mean) ^ 2,
+        greta_se = (mean(greta_fit_condense) - true_mean) ^ 2
       )
     }
     
@@ -139,11 +147,13 @@ run_accuracy_benchmark <- function(true_dist, num_iterations, n_iter = 1e4L, n_w
       # bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
       # stan_dist <- TotalVarDist(true_dist,stan_fit_condense)
       # greta_dist <- TotalVarDist(true_dist,greta_fit_condense)
-      nimble_dist <- TotalVarDist(true_dist,nimble_fit_condense)
+      nimble_dist <- TotalVarDist(true_dist,nimble_fit_condense,
+                                  asis.smooth.discretize = "smooth")
       
       tibble(
         iter = iter,
-        nimble_dist = nimble_dist
+        nimble_dist = nimble_dist,
+        nimble_se = (mean(nimble_fit_condense) - true_mean) ^ 2,
       )
     }
     
