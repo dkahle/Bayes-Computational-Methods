@@ -6,8 +6,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-library(tidyverse); options(tibble.width = Inf); theme_set(theme_bw())
+library(tidyverse); options(tibble.width = Inf)
 library(magrittr)
+theme_set(theme_minimal())
 library(here)
 ```
 
@@ -91,8 +92,25 @@ cox_exponential_bench_files <- c(
   here("Simulation Results", "survival-models", "cox-exponential-results-stan.rds")
 )
 
+eight_schools_bench_files <- c(
+  here("Simulation Results", "8-schools", "eight-schools-results.rds"),
+  here("Simulation Results", "8-schools", "eight-schools-results-stan.rds")
+)
 
-files <- logistic_regression_bench_files
+ma_model_bench_files <- c(
+  here("Simulation Results", "time-series", "ma-model", "ma-model-results.rds"),
+  here("Simulation Results", "time-series", "ma-model", "ma-model-results-stan.rds")
+)
+
+ar_model_bench_files <- c(
+  here("Simulation Results", "time-series", "ar-model", "ar-model-results-no-nimble.rds"),
+  here("Simulation Results", "time-series", "ar-model", "ar-model-results-greta.rds"),
+  here("Simulation Results", "time-series", "ar-model", "ar-model-stan-compile-results.rds")
+)
+
+files <- eight_schools_bench_files
+
+model_name <- "8"
 
 combine_bench <- function(files, model_name) {
   combined_results <- files %>% map_dfr(~ readRDS(.))
@@ -250,6 +268,14 @@ logistic_reg_results <- logistic_regression_bench_files %>%
   combine_bench_indiv("logistic regression")
 poisson_reg_results <- poisson_regression_bench_files %>% 
   combine_bench_indiv("poisson regression")
+cox_exp_results <- cox_exponential_bench_files %>% 
+  combine_bench_indiv("cox exponential")
+eight_schools_results <- eight_schools_bench_files %>% 
+  combine_bench_indiv("eight schools")
+ma_model_results <- ma_model_bench_files %>% 
+  combine_bench_indiv("ma model")
+ar_model_results <- ar_model_bench_files %>% 
+  combine_bench_indiv("ar model")
 
 
 ```
@@ -287,7 +313,11 @@ bench_results_indiv <- bind_rows(
   hier_log_reg_results,
   linear_reg_results,
   logistic_reg_results,
-  poisson_reg_results
+  poisson_reg_results,
+  cox_exp_results,
+  eight_schools_results,
+  ma_model_results,
+  ar_model_results
 )
 
 bench_results_indiv
@@ -317,7 +347,7 @@ bench_results_indiv <- bench_results_indiv %>%
 ```
 
 ```{r}
-bench_results_indiv <- readRDS(here("bench_results_indiv2.RDS"))
+bench_results_indiv <- readRDS(here("bench_results_indiv.RDS"))
 
 bench_results_indiv %>%
   ggplot(aes(x = method, y = time)) +
@@ -376,6 +406,83 @@ bench_results_indiv %>%
 
 ```
 
+## Strip Charts
+
+```{r}
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  ggplot(aes(method, time)) + 
+  geom_jitter(width = 0.1) + 
+  facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) + 
+  ylim(0,100)
+  
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  # filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  geom_jitter(width = 0.1) + 
+  facet_wrap(vars(model), scales = "free_y") + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
+  
+  
+```
+
+- First slide of strip charts
+```{r}
+first_eight <- bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  group_by(model) %>% 
+  summarize(mean_time = mean(time)) %>% 
+  arrange(mean_time) %>% 
+  pull(model) %>% 
+  .[1:8] %>% 
+  sort()
+
+first_six <- bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  group_by(model) %>% 
+  summarize(mean_time = mean(time)) %>% 
+  arrange(mean_time) %>% 
+  pull(model) %>% 
+  .[1:6] %>% 
+  sort()
+
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  filter(model %in% first_eight) %>% 
+  filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  geom_jitter(width = 0.2, size = 1) + 
+  # facet_wrap(vars(model), scales = "free_y") + 
+  facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
+
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  filter(model %in% first_six) %>% 
+  filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  geom_jitter(width = 0.2) + 
+  # facet_wrap(vars(model), scales = "free_y") + 
+  facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
+  
+
+
+```
+
+
 ## Accuracy benchmarking
 
 ```{r}
@@ -430,6 +537,9 @@ tibble(x = stan_fit_condense) %>%
 ```
 
 ```{r}
+readRDS(here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"))
+
+
 exp_gamma_acc_files <- c(
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"),
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy-nimble.rds")
@@ -536,5 +646,11 @@ time_results %>%
         plot.title = element_text(hjust = 0.5),
         text = element_text(size=20))
 
+```
+
+## Strip charts for accuracy
+
+```{r}
+time_results
 ```
 
