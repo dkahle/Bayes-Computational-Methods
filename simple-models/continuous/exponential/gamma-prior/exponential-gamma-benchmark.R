@@ -50,6 +50,7 @@ num_iterations <- 20 # Number of times you want to benchmark each model\
 source(here("benchmark-accuracy-function.R"))
 
 true_dist <- distr::Gammad(11,1 / 17.85244)
+true_mean <- 11 / 17.85244
 
 run_accuracy_benchmark(true_dist,num_iterations, n_iter, n_warmup)
 
