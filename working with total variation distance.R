@@ -6,24 +6,36 @@ library(distr)
 library(distrEx)
 
 
-true_dist <- Beta(3,9)
-x <- rbeta(10000, 3,9)
-true_dist <- Norm(0,1)
-x <- rnorm(100000, 0, 1)
+true_dist <- distr::Gammad(7,0.5)
 
-x_dist <- TotalVarDist(true_dist, x, asis.smooth.discretize = "asis")
+jags_fit_condense <- readRDS("jags_fit_condense.RDS")
+stan_fit_condense <- readRDS("stan_fit_condense.RDS")
+bugs_fit_condense <- readRDS("bugs_fit_condense.RDS")
+greta_fit_condense <- readRDS("greta_fit_condense.RDS")
+nimble_fit_condense <- readRDS("nimble_fit_condense.RDS")
+
+x <- rgamma(10000, 7, 2)
+
+
+jags_dist <- TotalVarDist(true_dist,jags_fit_condense, 
+                          asis.smooth.discretize = "smooth")
+bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense, 
+                          asis.smooth.discretize = "smooth")
+stan_dist <- TotalVarDist(true_dist,stan_fit_condense, 
+                          asis.smooth.discretize = "smooth")
+greta_dist <- TotalVarDist(true_dist,greta_fit_condense, 
+                           asis.smooth.discretize = "smooth")
+nimble_dist <- TotalVarDist(true_dist,nimble_fit_condense, 
+                           asis.smooth.discretize = "smooth")
+x_dist <- TotalVarDist(true_dist,x, 
+                           asis.smooth.discretize = "smooth")
+
+jags_dist
+bugs_dist
+stan_dist
+greta_dist
+nimble_dist
 x_dist
-x_dist <- TotalVarDist(true_dist, x, asis.smooth.discretize = "discretize")
-x_dist
-x_dist <- TotalVarDist(x, true_dist, asis.smooth.discretize = "smooth")
-x_dist
-
-
-
-jags_dist <- TotalVarDist(true_dist,jags_fit_condense)
-bugs_dist <- TotalVarDist(true_dist,bugs_fit_condense)
-stan_dist <- TotalVarDist(true_dist,stan_fit_condense)
-greta_dist <- TotalVarDist(true_dist,greta_fit_condense)
 
 jags_dist <- TotalVarDist(true_dist,jags_fit_condense, 
                           asis.smooth.discretize = "asis")
