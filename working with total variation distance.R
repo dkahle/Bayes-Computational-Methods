@@ -5,8 +5,22 @@ library(magrittr)
 library(distr)
 library(distrEx)
 
+x <- rbeta(10000, 2,1)
 
-true_dist <- distr::Gammad(7,0.5)
+true_dist <- Beta(1,2)
+
+jags_fit_object <- jags_fit$mcmc %>% as.array()
+# dim(jags_fit_object) <- c(dim(jags_fit_object), 1)
+jags_fit_condense <- c(jags_fit_object[,1], 
+                       jags_fit_object[,2],
+                       jags_fit_object[,3],
+                       jags_fit_object[,4])
+
+TotalVarDist(true_dist,jags_fit_condense, 
+             asis.smooth.discretize = "smooth")
+TotalVarDist(true_dist,x, 
+             asis.smooth.discretize = "smooth")
+
 
 jags_fit_condense <- readRDS("jags_fit_condense.RDS")
 stan_fit_condense <- readRDS("stan_fit_condense.RDS")

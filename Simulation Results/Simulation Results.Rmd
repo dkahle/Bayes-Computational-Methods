@@ -6,8 +6,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-theme_set(theme_minimal())
+library(tidyverse); options(tibble.width = Inf)
 library(magrittr)
+theme_set(theme_minimal())
 library(here)
 ```
 
@@ -536,6 +537,9 @@ tibble(x = stan_fit_condense) %>%
 ```
 
 ```{r}
+readRDS(here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"))
+
+
 exp_gamma_acc_files <- c(
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"),
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy-nimble.rds")
