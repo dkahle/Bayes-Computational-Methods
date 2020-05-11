@@ -34,7 +34,7 @@ nimble_constants <- list(
 
 nimble_model <- nimbleCode({
   for (i in 1:N) {
-    y[i] ~ dnorm(mu, 1 / tau)
+    y[i] ~ dnorm(mu, tau)
   }
   mu ~ dnorm(0,1)
 })
