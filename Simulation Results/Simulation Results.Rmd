@@ -1,7 +1,9 @@
 ---
 title: "Simulation Results"
 author: "Evan Miyakawa"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +15,7 @@ library(here)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 exp_gamma_bench_files <- c(
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-results.rds"),
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-results-greta.rds"),
@@ -281,7 +283,7 @@ ar_model_results <- ar_model_bench_files %>%
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 # bench_results <- bind_rows(
 #   exp_gamma_results,
 #   normal_gamma_tau_results,
@@ -325,7 +327,7 @@ bench_results_indiv
 bench_results_indiv <- bench_results_indiv %>% 
   filter(!(method == "Stan Compile" & time < 5))
 
-# saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
+saveRDS(bench_results_indiv, file = "bench_results_indiv.RDS")
 # saveRDS(bench_results_indiv, file = "bench_results_indiv2.RDS")
 ```
 
@@ -406,140 +408,183 @@ bench_results_indiv %>%
 
 ```
 
-## Strip Charts
+<!-- ## Strip Charts -->
 
-```{r}
-bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  ggplot(aes(method, time)) + 
-  geom_jitter(width = 0.1) + 
-  facet_wrap(vars(model)) + 
-  theme_update(panel.grid.minor = element_blank()) + 
-  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) + 
-  ylim(0,100)
-  
-bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  # filter(time < 100) %>% 
-  ggplot(aes(method, time, color = method)) + 
-  geom_jitter(width = 0.1) + 
-  facet_wrap(vars(model), scales = "free_y") + 
-  theme_update(panel.grid.minor = element_blank()) + 
-  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
-  
-  
-```
+<!-- ```{r} -->
+<!-- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   ggplot(aes(method, time)) +  -->
+<!--   geom_jitter(width = 0.1) +  -->
+<!--   facet_wrap(vars(model)) +  -->
+<!--   theme_update(panel.grid.minor = element_blank()) +  -->
+<!--   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) +  -->
+<!--   ylim(0,100) -->
 
-- First slide of strip charts
-```{r}
-first_eight <- bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  group_by(model) %>% 
-  summarize(mean_time = mean(time)) %>% 
-  arrange(mean_time) %>% 
-  pull(model) %>% 
-  .[1:8] %>% 
-  sort()
-
-first_six <- bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  group_by(model) %>% 
-  summarize(mean_time = mean(time)) %>% 
-  arrange(mean_time) %>% 
-  pull(model) %>% 
-  .[1:6] %>% 
-  sort()
-
-bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  filter(model %in% first_eight) %>% 
-  filter(time < 100) %>% 
-  ggplot(aes(method, time, color = method)) + 
-  geom_jitter(width = 0.2, size = 1) + 
-  # facet_wrap(vars(model), scales = "free_y") + 
-  facet_wrap(vars(model)) + 
-  theme_update(panel.grid.minor = element_blank()) + 
-  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
-
-bench_results_indiv %>% 
-  mutate(model = model_name %>% 
-           str_replace_all("_", " ")) %>% 
-  filter(model %in% first_six) %>% 
-  filter(time < 100) %>% 
-  ggplot(aes(method, time, color = method)) + 
-  geom_jitter(width = 0.2) + 
-  # facet_wrap(vars(model), scales = "free_y") + 
-  facet_wrap(vars(model)) + 
-  theme_update(panel.grid.minor = element_blank()) + 
-  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
-  
+<!-- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   # filter(time < 100) %>%  -->
+<!--   ggplot(aes(method, time, color = method)) +  -->
+<!--   geom_jitter(width = 0.1) +  -->
+<!--   facet_wrap(vars(model), scales = "free_y") +  -->
+<!--   theme_update(panel.grid.minor = element_blank()) +  -->
+<!--   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) -->
 
 
-```
+<!-- ``` -->
+
+<!-- - First slide of strip charts -->
+<!-- ```{r} -->
+<!-- first_nine <- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   group_by(model) %>%  -->
+<!--   summarize(mean_time = mean(time)) %>%  -->
+<!--   arrange(mean_time) %>%  -->
+<!--   pull(model) %>%  -->
+<!--   .[1:9] %>%  -->
+<!--   sort() -->
+
+<!-- # first_six <- bench_results_indiv %>%  -->
+<!-- #   mutate(model = model_name %>%  -->
+<!-- #            str_replace_all("_", " ")) %>%  -->
+<!-- #   group_by(model) %>%  -->
+<!-- #   summarize(mean_time = mean(time)) %>%  -->
+<!-- #   arrange(mean_time) %>%  -->
+<!-- #   pull(model) %>%  -->
+<!-- #   .[1:6] %>%  -->
+<!-- #   sort() -->
+
+<!-- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   filter(model %in% first_nine) %>%  -->
+<!--   filter(time < 100) %>%  -->
+<!--   ggplot(aes(method, time, color = method)) +  -->
+<!--   geom_jitter(width = 0.2, size = 1) +  -->
+<!--   # facet_wrap(vars(model), scales = "free_y") +  -->
+<!--   facet_wrap(vars(model)) +  -->
+<!--   theme_update(panel.grid.minor = element_blank()) +  -->
+<!--   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) +  -->
+<!--   labs(title = "Completion Time Strip Charts", subtitle = "Each individual simulation computation completion time shown, facetted by model") +  -->
+<!--   theme(plot.title = element_text(hjust = 0.5, size = 20),  -->
+<!--         plot.subtitle = element_text(hjust = 0.5),  -->
+<!--         legend.position = "none",  -->
+<!--         axis.text = element_text(size=10),  -->
+<!--         axis.title = element_text(size = 13),  -->
+<!--         axis.title.x = element_text(vjust = -1), -->
+<!--         axis.title.y = element_text(vjust = 2))  +  -->
+<!--   xlab("Implementation") +  -->
+<!--   ylab("Completion Time") -->
+
+<!-- # bench_results_indiv %>%  -->
+<!-- #   mutate(model = model_name %>%  -->
+<!-- #            str_replace_all("_", " ")) %>%  -->
+<!-- #   filter(model %in% first_six) %>%  -->
+<!-- #   filter(time < 100) %>%  -->
+<!-- #   ggplot(aes(method, time, color = method)) +  -->
+<!-- #   geom_jitter(width = 0.2) +  -->
+<!-- #   # facet_wrap(vars(model), scales = "free_y") +  -->
+<!-- #   facet_wrap(vars(model)) +  -->
+<!-- #   theme_update(panel.grid.minor = element_blank()) +  -->
+<!-- #   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) -->
+
+
+
+<!-- ``` -->
+
+<!-- - second slide -->
+
+<!-- ```{r} -->
+<!-- last_seven <- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   group_by(model) %>%  -->
+<!--   summarize(mean_time = mean(time)) %>%  -->
+<!--   arrange(mean_time) %>%  -->
+<!--   pull(model) %>%  -->
+<!--   .[10:16] %>%  -->
+<!--   sort() -->
+
+<!-- bench_results_indiv %>%  -->
+<!--   mutate(model = model_name %>%  -->
+<!--            str_replace_all("_", " ")) %>%  -->
+<!--   filter(model %in% last_seven) %>%  -->
+<!--   filter(time < 100) %>%  -->
+<!--   ggplot(aes(method, time, color = method)) +  -->
+<!--   geom_jitter(width = 0.2, size = 1) +  -->
+<!--   # facet_wrap(vars(model), scales = "free_y") +  -->
+<!--   facet_wrap(vars(model)) +  -->
+<!--   theme_update(panel.grid.minor = element_blank()) +  -->
+<!--   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) +  -->
+<!--   labs(title = "Completion Time Strip Charts", subtitle = "Each individual simulation computation completion time shown, facetted by model") +  -->
+<!--   theme(plot.title = element_text(hjust = 0.5, size = 20),  -->
+<!--         plot.subtitle = element_text(hjust = 0.5),  -->
+<!--         legend.position = "none",  -->
+<!--         axis.text = element_text(size=10),  -->
+<!--         axis.title = element_text(size = 13),  -->
+<!--         axis.title.x = element_text(vjust = -1), -->
+<!--         axis.title.y = element_text(vjust = 2))  +  -->
+<!--   xlab("Implementation") +  -->
+<!--   ylab("Completion Time") -->
+<!-- ``` -->
 
 
 ## Accuracy benchmarking
 
+<!-- ```{r} -->
+<!-- bugs_fit_condense <- readRDS(here("Simulation Results", "simple-models",  -->
+<!--                                   "discrete", "binomial", "beta-prior",  -->
+<!--                                   "bugs_fit_condense_beta_binomial.RDS")) -->
+<!-- jags_fit_condense <- readRDS(here("Simulation Results", "simple-models",  -->
+<!--                                   "discrete", "binomial", "beta-prior",  -->
+<!--                                   "jags_fit_condense_beta_binomial.RDS")) -->
+<!-- stan_fit_condense <- readRDS(here("Simulation Results", "simple-models",  -->
+<!--                                   "discrete", "binomial", "beta-prior",  -->
+<!--                                   "stan_fit_condense_beta_binomial.RDS")) -->
+<!-- greta_fit_condense <- readRDS(here("Simulation Results", "simple-models",  -->
+<!--                                   "discrete", "binomial", "beta-prior",  -->
+<!--                                   "greta_fit_condense_beta_binomial.RDS")) -->
+<!-- nimble_fit_condense <- readRDS(here("Simulation Results", "simple-models",  -->
+<!--                                   "discrete", "binomial", "beta-prior",  -->
+<!--                                   "nimble_fit_condense_beta_binomial.RDS")) -->
+<!-- dists <- tibble( -->
+<!--   x = c(bugs_fit_condense, jags_fit_condense, stan_fit_condense,  -->
+<!--         greta_fit_condense, nimble_fit_condense), -->
+<!--   method = c(rep("bugs", length(bugs_fit_condense)), -->
+<!--              rep("jags", length(jags_fit_condense)), -->
+<!--              rep("stan", length(stan_fit_condense)), -->
+<!--              rep("greta", length(greta_fit_condense)), -->
+<!--              rep("nimble", length(nimble_fit_condense)) -->
+<!--              ) -->
+<!-- ) -->
+
+<!-- dists %>%  -->
+<!--   ggplot(aes(x, color = method)) +  -->
+<!--   geom_density(adjust = 2) +  -->
+<!--   stat_function(fun = dbeta, args = list(3,9), color = "black") -->
+
+
+<!-- tibble(x = bugs_fit_condense) %>%  -->
+<!--   ggplot(aes(x)) +  -->
+<!--     geom_density(adjust = 2) +  -->
+<!--     stat_function(fun = dbeta, args = list(3,9), color = "red") -->
+
+<!-- tibble(x = jags_fit_condense) %>%  -->
+<!--   ggplot(aes(x)) +  -->
+<!--     geom_density(adjust = 2) +  -->
+<!--     stat_function(fun = dbeta, args = list(3,9), color = "red") -->
+
+<!-- tibble(x = stan_fit_condense) %>%  -->
+<!--   ggplot(aes(x)) +  -->
+<!--     geom_density(adjust = 2) +  -->
+<!--     stat_function(fun = dbeta, args = list(3,9), color = "red") -->
+
+
+<!-- ``` -->
+
 ```{r}
-bugs_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
-                                  "discrete", "binomial", "beta-prior", 
-                                  "bugs_fit_condense_beta_binomial.RDS"))
-jags_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
-                                  "discrete", "binomial", "beta-prior", 
-                                  "jags_fit_condense_beta_binomial.RDS"))
-stan_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
-                                  "discrete", "binomial", "beta-prior", 
-                                  "stan_fit_condense_beta_binomial.RDS"))
-greta_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
-                                  "discrete", "binomial", "beta-prior", 
-                                  "greta_fit_condense_beta_binomial.RDS"))
-nimble_fit_condense <- readRDS(here("Simulation Results", "simple-models", 
-                                  "discrete", "binomial", "beta-prior", 
-                                  "nimble_fit_condense_beta_binomial.RDS"))
-dists <- tibble(
-  x = c(bugs_fit_condense, jags_fit_condense, stan_fit_condense, 
-        greta_fit_condense, nimble_fit_condense),
-  method = c(rep("bugs", length(bugs_fit_condense)),
-             rep("jags", length(jags_fit_condense)),
-             rep("stan", length(stan_fit_condense)),
-             rep("greta", length(greta_fit_condense)),
-             rep("nimble", length(nimble_fit_condense))
-             )
-)
-
-dists %>% 
-  ggplot(aes(x, color = method)) + 
-  geom_density(adjust = 2) + 
-  stat_function(fun = dbeta, args = list(3,9), color = "black")
-
-
-tibble(x = bugs_fit_condense) %>% 
-  ggplot(aes(x)) + 
-    geom_density(adjust = 2) + 
-    stat_function(fun = dbeta, args = list(3,9), color = "red")
-
-tibble(x = jags_fit_condense) %>% 
-  ggplot(aes(x)) + 
-    geom_density(adjust = 2) + 
-    stat_function(fun = dbeta, args = list(3,9), color = "red")
-
-tibble(x = stan_fit_condense) %>% 
-  ggplot(aes(x)) + 
-    geom_density(adjust = 2) + 
-    stat_function(fun = dbeta, args = list(3,9), color = "red")
-
-
-```
-
-```{r}
-readRDS(here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"))
-
-
 exp_gamma_acc_files <- c(
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy.rds"),
   here("Simulation Results", "simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma-accuracy-nimble.rds")
@@ -551,8 +596,8 @@ normal_gamma_tau_acc_files <- c(
 )
 
 normal_normal_acc_files <- c(
-  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy.rds")
-  # here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy-nimble.rds")
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy.rds"),
+  here("Simulation Results", "simple-models", "continuous", "normal", "normal-prior", "normal-normal-accuracy-nimble.rds")
 )
 
 beta_bernoulli_acc_files <- c(
@@ -578,7 +623,8 @@ combine_time_indiv <- function(files, model_name) {
     select(-iter, -iter1) %>% 
     mutate(model = model_name)
   
-  stan_mean <- combined_results$stan_dist %>% mean()
+  # stan_mean <- combined_results$stan_dist %>% mean()
+  stan_mean <- 1
   
   combined_results <- combined_results %>% 
     mutate(JAGS = jags_dist / stan_mean, 
@@ -595,8 +641,8 @@ exp_gamma_acc_df <- exp_gamma_acc_files %>%
   combine_time_indiv("exponential_gamma")
 normal_gamma_tau_acc_df <- normal_gamma_tau_acc_files %>% 
   combine_time_indiv("normal_gamma_tau")
-# normal_normal_acc_df <- normal_normal_acc_files %>% 
-#   combine_time_indiv("normal_normal")
+normal_normal_acc_df <- normal_normal_acc_files %>%
+  combine_time_indiv("normal_normal")
 beta_bernoulli_acc_df <- beta_bernoulli_acc_files %>% 
   combine_time_indiv("beta_bernoulli")
 beta_binomial_acc_df <- beta_binomial_acc_files %>% 
@@ -607,50 +653,252 @@ poisson_gamma_acc_df <- poisson_gamma_acc_files %>%
 time_results <- bind_rows(
   exp_gamma_acc_df,
   normal_gamma_tau_acc_df,
+  normal_normal_acc_df,
   beta_bernoulli_acc_df,
   beta_binomial_acc_df,
   poisson_gamma_acc_df
 )
-
-time_results %>% 
-  pivot_longer(
-    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
-    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
-    names_to = "method",
-    values_to = "TVD_Ratio"
-  ) %>% 
-  ggplot(aes(TVD_Ratio)) + 
-    geom_histogram(aes(fill = method)) + 
-    facet_wrap(facets = "method") + 
-  theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5),
-        text = element_text(size=20)) + 
-  ggtitle("Implementation TVD Accuracy Histograms") + 
-  xlab("Implementation") + 
-  ylab("TVD Ratio")
-
-time_results %>% 
-  pivot_longer(
-    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
-    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
-    names_to = "method",
-    values_to = "TVD_Ratio"
-  ) %>% 
-  ggplot(aes(x = method, y = TVD_Ratio)) + 
-    geom_boxplot(aes(color = method), size = 0.7) + 
-  ggtitle("Implementation TVD Accuracy Boxplots") + 
-  xlab("Implementation") + 
-  ylab("TVD Ratio") + 
-  scale_x_discrete(limits = c("OpenBUGS", "JAGS", "Nimble", "Stan", "Greta")) + 
-  theme(legend.position="none",
-        plot.title = element_text(hjust = 0.5),
-        text = element_text(size=20))
+# 
+# time_results %>% 
+#   pivot_longer(
+#     # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+#     cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
+#     names_to = "method",
+#     values_to = "TVD"
+#   ) %>% 
+#   ggplot(aes(TVD)) + 
+#     geom_histogram(aes(fill = method)) + 
+#     facet_wrap(facets = "method") + 
+#   theme(legend.position="none",
+#         plot.title = element_text(hjust = 0.5),
+#         text = element_text(size=20)) + 
+#   ggtitle("Implementation TVD Accuracy Histograms") + 
+#   xlab("Implementation") + 
+#   ylab("TVD Ratio")
+# 
+# time_results %>% 
+#   pivot_longer(
+#     # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+#     cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
+#     names_to = "method",
+#     values_to = "TVD_Ratio"
+#   ) %>% 
+#   ggplot(aes(x = method, y = TVD_Ratio)) + 
+#     geom_boxplot(aes(color = method), size = 0.7) + 
+#   ggtitle("Implementation TVD Accuracy Boxplots") + 
+#   xlab("Implementation") + 
+#   ylab("TVD Ratio") + 
+#   scale_x_discrete(limits = c("OpenBUGS", "JAGS", "Nimble", "Stan", "Greta")) + 
+#   theme(legend.position="none",
+#         plot.title = element_text(hjust = 0.5),
+#         text = element_text(size=20))
 
 ```
 
-## Strip charts for accuracy
+## Strip charts for time
+
+- First slide of strip charts
+```{r}
+first_nine <- bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  group_by(model) %>% 
+  summarize(mean_time = mean(time)) %>% 
+  arrange(mean_time) %>% 
+  pull(model) %>% 
+  .[1:9] %>% 
+  sort()
+
+# first_six <- bench_results_indiv %>% 
+#   mutate(model = model_name %>% 
+#            str_replace_all("_", " ")) %>% 
+#   group_by(model) %>% 
+#   summarize(mean_time = mean(time)) %>% 
+#   arrange(mean_time) %>% 
+#   pull(model) %>% 
+#   .[1:6] %>% 
+#   sort()
+
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  filter(model %in% first_nine) %>% 
+  filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  geom_jitter(width = 0.2, size = 1) + 
+  # facet_wrap(vars(model), scales = "free_y") + 
+  facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) + 
+  labs(title = "Completion Time Strip Charts", subtitle = "Each individual simulation computation completion time shown, facetted by model") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", 
+        axis.text = element_text(size=10), 
+        axis.title = element_text(size = 13), 
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 2))  + 
+  xlab("Implementation") + 
+  ylab("Completion Time (Seconds)")
+
+# bench_results_indiv %>% 
+#   mutate(model = model_name %>% 
+#            str_replace_all("_", " ")) %>% 
+#   filter(model %in% first_six) %>% 
+#   filter(time < 100) %>% 
+#   ggplot(aes(method, time, color = method)) + 
+#   geom_jitter(width = 0.2) + 
+#   # facet_wrap(vars(model), scales = "free_y") + 
+#   facet_wrap(vars(model)) + 
+#   theme_update(panel.grid.minor = element_blank()) + 
+#   scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile"))
+  
+
+
+```
+
+- second slide
 
 ```{r}
-time_results
+last_seven <- bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  group_by(model) %>% 
+  summarize(mean_time = mean(time)) %>% 
+  arrange(mean_time) %>% 
+  pull(model) %>% 
+  .[10:16] %>% 
+  sort()
+
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  filter(model %in% last_seven) %>% 
+  filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  geom_jitter(width = 0.2, size = 1) + 
+  # facet_wrap(vars(model), scales = "free_y") + 
+  facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) + 
+  labs(title = "Completion Time Strip Charts", subtitle = "Each individual simulation computation completion time shown, facetted by model") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", 
+        axis.text = element_text(size=10), 
+        axis.title = element_text(size = 13), 
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 2))  + 
+  xlab("Implementation") + 
+  ylab("Completion Time (Seconds)")
+```
+
+- overall boxplot time
+
+```{r}
+bench_results_indiv %>% 
+  mutate(model = model_name %>% 
+           str_replace_all("_", " ")) %>% 
+  filter(time < 100) %>% 
+  ggplot(aes(method, time, color = method)) + 
+  # geom_jitter(width = 0.2, size = 1) + 
+  geom_boxplot() + 
+  # facet_wrap(vars(model), scales = "free_y") + 
+  # facet_wrap(vars(model)) + 
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "OpenBUGS", "Stan",  "Nimble", "Greta", "Stan Compile")) + 
+  labs(title = "Completion Time Overall Boxplots", subtitle = "Completion time aggregated across all models, for each implementation") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", 
+        axis.text = element_text(size=10), 
+        axis.title = element_text(size = 13), 
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 2))  + 
+  xlab("Implementation") + 
+  ylab("Completion Time (Seconds)")
+```
+
+
+- first chart accuracy
+```{r}
+time_results %>% 
+  pivot_longer(
+    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
+    names_to = "method",
+    values_to = "TVD"
+  ) %>% 
+  mutate(model = model %>% 
+           str_replace_all("_", " ")) %>% 
+  ggplot(aes(method, TVD, color = method)) + 
+  geom_jitter(width = 0.1, size = 1) + 
+  facet_wrap(vars(model)) +
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "Stan", "Nimble", "OpenBUGS", "Greta")) + 
+  xlab("Implementation") + 
+   labs(title = "TVD Strip Charts", subtitle = "Each individual simulation TVD shown, facetted by model") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", 
+        axis.text = element_text(size=12), 
+        axis.title = element_text(size = 15), 
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 2))
+```
+
+- overall accuracy boxplot
+
+```{r}
+time_results %>% 
+  pivot_longer(
+    # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist), 
+    cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta), 
+    names_to = "method",
+    values_to = "TVD"
+  ) %>% 
+  mutate(model = model %>% 
+           str_replace_all("_", " ")) %>% 
+  ggplot(aes(method, TVD, color = method)) + 
+  # geom_jitter(width = 0.1, size = 1) + 
+  geom_boxplot() + 
+  # facet_wrap(vars(model)) +
+  theme_update(panel.grid.minor = element_blank()) + 
+  scale_x_discrete(limits = c("JAGS", "Stan", "Nimble", "OpenBUGS", "Greta")) + 
+  xlab("Implementation") + 
+  labs(title = "TVD Overall Boxplots", subtitle = "TVD aggregated across all models, for each implementation") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        plot.subtitle = element_text(hjust = 0.5), 
+        legend.position = "none", 
+        axis.text = element_text(size=12), 
+        axis.title = element_text(size = 15), 
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 2))
+
+# time_results %>%
+#   pivot_longer(
+#     # cols = c(jags_dist, bugs_dist, stan_dist, greta_dist, nimble_dist),
+#     cols = c(JAGS, OpenBUGS, Stan, Nimble, Greta),
+#     names_to = "method",
+#     values_to = "TVD"
+#   ) %>%
+#   mutate(model = model %>%
+#            str_replace_all("_", " ")) %>%
+#   ggplot(aes(method, TVD, color = method)) +
+#   # geom_jitter(width = 0.1, size = 1) +
+#   geom_boxplot() +
+#   # facet_wrap(vars(model)) +
+#   theme_update(panel.grid.minor = element_blank()) +
+#   scale_x_discrete(limits = c("JAGS", "Stan", "Nimble", "OpenBUGS", "Greta")) +
+#   theme(
+#     legend.position = "none"
+#   ) +
+#   xlab("Implementation") +
+#   labs(title = "TVD Overall Boxplots", subtitle = "TVD aggregated across all models, for each implementation") +
+#   theme(plot.title = element_text(hjust = 0.5),
+#         plot.subtitle = element_text(hjust = 0.5))
+# 
+
+  
 ```
 
