@@ -7,34 +7,35 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = FALSE)
+library(knitr)
+library(png)
 ```
 
 # Introduction
 
 ## The Bayes Paradigm
 
-In Bayesian statistical inference, we are interested in finding the posterior distribution of a certain parameter, given a prior distribution and a likelihood for that parameter from a sample of data. Bayes Rule states that, given a parameter of interest $\theta$ and some known data $x$, we can find the conditional probability of $\theta$ given $y$ using $$ p(\theta | x) = \frac{p(x | \theta) p(\theta)}{p(x)},$$ where in the discrete case $p(x) = \sum_\theta p(\theta) p(x|\theta),$ and in the continuous case, $p(x) = \int p(\theta) p(y|\theta) d\theta$. More formally, we can derive the posterior distribution of a parameter $\theta$, $p(\theta | x)$, by $$p(\theta | x_1, x_2, \dots, x_n) = \frac{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta)}{\int{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta) d \theta}},$$ where $\ell(x | \theta)$ is proportional to the likelihood of $\theta$, conditioned on the data, and $\pi(\theta)$ is the prior distribution of $\theta$. For example, suppose that $X_i \sim \text{Bern}(\theta)$, and we are interested in inference on $\theta$. A reasonable prior to assign to $\theta$ would be a $\text{Beta}(\alpha, \beta)$, distribution, given that $\theta$ is constrained to be between 0 and 1, which is a property of the Beta distribution. Therefore, given that $\theta \sim \text{Beta}(\alpha, \beta)$ for some known values of $\alpha$ and $\beta$, then 
+In Bayesian statistical inference, we are interested in finding the posterior distribution of certain parameters, given a prior distribution and a likelihood for those parameters our data. Much of Bayesian theory is built upon the definition of conditional probability, which states that we can find the probability of a variable $\theta$, conditioned on $x$, by $$ p(\theta | x) = \frac{p(x | \theta) p(\theta)}{p(x)}.$$ In any Bayesian inference, the first step is to find the joint probability distribution of all the observed and unobserved quantities in the problem. Using the definition of conditional probability, we can then find the posterior distribution of the parameters of interest. Bayes theorem states that the posterior distribution of a parameter $\theta$ is equal to $$p(\theta | x_1, x_2, \dots, x_n) = \frac{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta)}{\int{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta) d \theta}} = \frac{\ell(\theta | \textbf{x}) \pi(\theta)}{\int{\ell(\theta | \textbf{x}) \pi(\theta) d \theta}},$$ where $\ell(\theta | \textbf{x})$ is proportional to the likelihood of $\theta$, conditioned on the data, and $\pi(\theta)$ is the prior distribution of $\theta$.
+
+For example, suppose that $X_i \sim \text{Bern}(\theta)$, and we are interested in inference on $\theta$. A reasonable prior to assign to $\theta$ would be a $\text{Beta}(\alpha, \beta)$, distribution, given that $\theta$ is constrained to be between 0 and 1, which is a property of the Beta distribution. Therefore, given that $\theta \sim \text{Beta}(\alpha, \beta)$ for some known values of $\alpha$ and $\beta$, then 
 \begin{align*}
-  p(\theta | x) &= \frac{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta)}{\int{\ell(\theta | x_1, x_2, \dots, x_n) \pi(\theta) d \theta}} \\
+  p(\theta | x) &= \frac{\ell(\theta | \textbf{x}) \pi(\theta)}{\int{\ell(\theta | \textbf{x}) \pi(\theta) d \theta}} \\
   &= \frac{\theta ^ {\sum_{i=1}^{n} x_i} (1 - \theta) ^ {n - \sum_{i=1}^{n} x_i} \frac{\Gamma (\alpha + \beta)}{\Gamma(\alpha) + \Gamma(\beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}}{\int \theta ^ {\sum_{i=1}^{n} x_i} (1 - \theta) ^ {n - \sum_{i=1}^{n} x_i} \frac{\Gamma (\alpha + \beta)}{\Gamma(\alpha) + \Gamma(\beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1} d \theta} \\
   &\propto \theta ^ {\sum (x_i) + \alpha - 1} (1 - \theta) ^ {n - \sum (x_i) + \beta - 1},
 \end{align*}
 which is the kernel of a $\text{Beta}\left(\sum (x_i) + \alpha, n - \sum (x_i) + \beta \right)$ distribution. Therefore, we can analytically calculate the posterior distribution of $\theta$ as $$p(\theta | x) \sim \text{Beta}\left(\sum (x_i) + \alpha, n - \sum (x_i) + \beta\right).$$
 
-## Bayesian Computation
+One challenge in bayesian inference comes in evaluating the integral in the denominator of Bayes theorem, which is used to normalize the posterior distribution. If we don't have distributions for the likelihood and prior that are conjugate (or in other words, play nice together), then it is impossible to analytically calculate the posterior distribution. 
 
-In more complicated scenarios, it is not easy to calculate the posterior distribution of a parameter by hand, and in many cases it is impossible. This is where computing can help us. If we could somehow computationally grab samples from the posterior distribution we are interested in, then we could obtain most of the statistics that we are interested in. 
+## Bayesian Computational Methods
 
-### History of Bayesian computation up to MCMC
+The need for bayesian computational methods arises in our search for an alternative approach to finding the posterior if we cannot do so analytically. Most of the time, the goal of any bayesian analysis is to not to find the posterior distribution, but to calculate expectations with respect to the posterior. However, in order for these estimates to be accurate, we often need to know about the full behavior of that posterior distribution. In bayesian computing, the aim is to somehow obtain individual draws of values that would come from the posterior, and then aggregate a lot of them to compute the expectations we need. 
 
 ### Markov Chain Monte Carlo
 
-Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples of a parameter from a distribution that is approximately equivalent to the target posterior distribution of that parameter. It is an iterative algorithm, where each realization gets closer to the target density we are interested in. An essential property of any Markov chain is that the distribution of each draw only depends on the most recent value drawn before it. As we keep obtaining draws, each draw is probabilisticly more likely to have come from the target posterior distribution. Based on the convergence properties of MCMC, we can expect each draw to be coming from the real distribution of the parameter we are interested, once we have let the Markov chain run long enough. 
+Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows for drawing samples from a target distribution, which in our case is the posterior. MCMC is an iterative algorithm, where we obtain one draw at a time from the parameter space from which we are trying to sample. In any Markov chain, the marginal distribution of each draw is conditioned on the values of our chain from the previous draw. As we keep obtaining draws, these marginal distributions asymptotically converge to the true target distribution. Therefore, if we run the markove chain for many iterations, we can expect to see draws coming from the true posterior distribution we are trying to estimate. MCMC is the only suitable method for obtaining the posterior distribution when we don't have conjugate priors.
 
-- MCMC is the only suitable method when we don't have a conjugate prior.
-
-
-### Metropolis-Hastings
+### Metropolis-Hastings Algorithm
 
 ### Gibbs Sampling
 
@@ -51,22 +52,19 @@ Lunn et. all outlines the Gibbs sampler algorithm as follows: If we have a vecto
     - Continue this process for the remainder of the $k$ elements of $\theta$.
 3. Repeat step 2 for the total decided number of iterations that the sampler will run. 
 
-The beauty of the Gibbs sampling strategy is that, no matter how complex the space of the posterior distribution is, sampling from these high-dimensional spaces can be broken down into more straightforward draws from one-dimensional distributions. The downside of this approach is that, in high-dimensional settings, it may take a very long time to sample from each conditional one-dimensional distribution in order to reach convergence. Furthermore, because the Gibbs sampler uses a random-walk behavior, if several variables are highly correlated, traversing the space can take a very high amount of iterations because the step-size needs to be small in order to not step outside the target distribution. 
 
-### BUGS
 
-The BUGS project, which stands for Bayesian inference Using Gibbs Sampling, began in 1989 in an effort to create a program that utilized MCMC to approximate draws from the posterior distribution in a Bayesian framework. The BUGS language has functions and distributions that allow for specifying relationship between different "nodes" in a bayesian model. While the language itself has a somewhat limited syntax, it is able to describe a very diverse and complex set of models. The BUGS language is declarative, meaning that the order of statements in a model script does not matter since the entire script is evaluated at once, instead of line-by-line in a procedural language. 
+The beauty of the Gibbs sampling strategy is that, no matter how complex the space of the posterior distribution is, sampling from these high-dimensional spaces can be broken down into more straightforward draws from one-dimensional distributions. Gibbs sampling is also easier to understand and implement, which makes it very versatile. However, full conditional distributions for each draw are needed in order to do the method.
 
-Many different programs have been developed that utilize the BUGS syntax to accomplish bayesian sampling, and while these programs have continually evolved, the BUGS syntax has remained very consistent. The Windows program WinBUGS was created by the inventors of the BUGS language, and was a more popular choice for bayesian computation until it became deprecated in 2007. OpenBUGS is now more commonly used in place of WinBUGS, although it's last stable release was in 2014. OpenBUGS communicates better with other software than WinBUGS and is more portable. 
+Because the Gibbs sampler is a random-walk algorithm, if several variables are highly correlated, traversing the space can take a very high amount of iterations because the step-size needs to be small in order to not step outside the target distribution. A two-dimensional example of this is seen in Figure 1, where the joint distribution of $\theta_1$ and $\theta_2$ is highlgy correlated. Since each Markov transition only allows us to move in the direction of one dimension at a time, it may take many steps in order to travel up and down the parameter space, as demonstrated by the red arrows. In reality, the movement of the chains will be much more random since the algorithm does not know which direction will allow the chain to most efficiently travel through the posterior.
 
-In general, there are six steps needed to run bayesian models in WinBUGS/OpenBUGS:
+```{r, echo = FALSE, eval = TRUE, out.width = "50%"}
+include_graphics("Paper-Figures/Gibbs1.png")
+include_graphics("Paper-Figures/Gibbs2.png")
+```
 
-1. Specify the model through BUGS syntax and check to make sure the model code is valid.
-2. Load the appropriate data.
-3. Compiling the BUGS model.
-4. Start the simulation at appropriate initial values for the Markov chains.
-5. Simulate draws from the posterior distributions of the unknown parameters of interest.
-6. Gather the results and report summary statistics, along with other appropriate output.
+![\textit{This is a demonstration of a Gibbs sampler in a highly correlated two-dimensional parameter space. On the left, the ideal behavior of the markov chain is shown, moving as quickly as possible from the bottom-left to the top-right to efficiently sample from the target distribution without stepping outside of it. On the right, we see the more realistic behavior of the markov chain, as the random-walk behavior of the Gibbs sampler moves the chain around in directions that aren't always preferred.}](Paper-Figures/Blank.png)
+
 
 ### Hamiltonian Monte Carlo
 
@@ -102,7 +100,23 @@ STAN 2015
 - "STAN is a platform for Bayesian inference that tries to abstract as much computation away as possible, so users can focus on building complex models"
 
 
+
 # Bayesian Samplers
+
+### BUGS
+
+The BUGS project, which stands for Bayesian inference Using Gibbs Sampling, began in 1989 in an effort to create a program that utilized MCMC to approximate draws from the posterior distribution in a Bayesian framework. The BUGS language has functions and distributions that allow for specifying relationship between different "nodes" in a bayesian model. While the language itself has a somewhat limited syntax, it is able to describe a very diverse and complex set of models. The BUGS language is declarative, meaning that the order of statements in a model script does not matter since the entire script is evaluated at once, instead of line-by-line in a procedural language. 
+
+Many different programs have been developed that utilize the BUGS syntax to accomplish bayesian sampling, and while these programs have continually evolved, the BUGS syntax has remained very consistent. The Windows program WinBUGS was created by the inventors of the BUGS language, and was a more popular choice for bayesian computation until it became deprecated in 2007. OpenBUGS is now more commonly used in place of WinBUGS, although it's last stable release was in 2014. OpenBUGS communicates better with other software than WinBUGS and is more portable. 
+
+In general, there are six steps needed to run bayesian models in WinBUGS/OpenBUGS:
+
+1. Specify the model through BUGS syntax and check to make sure the model code is valid.
+2. Load the appropriate data.
+3. Compiling the BUGS model.
+4. Start the simulation at appropriate initial values for the Markov chains.
+5. Simulate draws from the posterior distributions of the unknown parameters of interest.
+6. Gather the results and report summary statistics, along with other appropriate output.
 
 ## OpenBUGS
 
@@ -604,7 +618,7 @@ Some use the $\sigma$ parameterization of the normal distribution, where $\sigma
 
 \textit{\textbf{Binomial}}: The $Bin(n,p)$ parameterization is used by \texttt{OpenBUGS}, \texttt{JAGS}, and \texttt{Nimble}, while the $Bin(p,n)$ parameterization is used by \texttt{STAN} and \texttt{greta}.
 
-\textit{\textbf{Gamma}}: The $Gam(\alpha,\lambda)$ parameterization, where $\alpha$ is a shape parameter and $\lambda$ is a rate parameter, is used by \texttt{OpenBUGS}, \texttt{JAGS}, \texttt{Nimble}, and \texttt{greta}. The $Gam(\alpha,\beta)$ parameterization is used by \texttt{STAN}, using the scale parameter $\beta = 1 / \lambda$.
+\textit{\textbf{Gamma}}: The $Gam(\alpha,\lambda)$ parameterization, where $\alpha$ is a shape parameter and $\lambda$ is a rate parameter, is used by all five implementations.
 
 \textit{\textbf{Weibull}}: The $Weibull(v,\lambda)$ parameterization is used by \texttt{OpenBUGS}, \texttt{JAGS}, \texttt{Nimble}, and \texttt{greta}, where $\lambda$ is a shape parameter. The $Weibull(v,\sigma)$ parameterization is used by \texttt{STAN}, where $\sigma = 1 / \lambda$.
 
