@@ -37,6 +37,20 @@ Markov Chain Monte Carlo (referred to as MCMC), is a common approach that allows
 
 ### Metropolis-Hastings Algorithm
 
+When using Markov Chain methods to sample from the Bayesian posterior distribution, the Metropolis-Hastings Algorithm gives a general approach to construct transitions from one draw to the next. The algorithm has two steps: a proposal step, where we suggest a new draw, and a correction step, where we try to reject any proposals that move too far away from the typical set from which we are trying to sample (Betancourt paper). 
+
+A probability density for the proposal is needed, which we will call $Q(q'|q)$, where $q$ is our current point, and $q'$ is the proposed point. After sampling from the proposal distribution, the probability of accepting this proposal is calculated as 
+
+$$a(q'|q) = \min \left( 1, \frac{Q(q'|q) \pi(q')}{Q(q|q') \pi(q)} \right).$$
+
+Anytime that a proposal moves closer to the typical set, it will automatically be accepted. If a proposal moves further away, it will be accepted with probability $\frac{Q(q'|q) \pi(q')}{Q(q|q') \pi(q)}$. Choosing a proposal distribution is important. The distribution should be easy to sample from, for any $q$, and should also allow for easy computation of the acceptance probability "ratio". Furthermore, the distribution should strike a balance between each proposed jump traveling a reasonable distance from the current point, while not having proposals rejected too frequently (BDA3). 
+
+A gaussian distribution, such as $Q(q'|q) = N(q'|q, \Sigma)$ is often used for the proposal, including in Gibbs Sampling methods. In this case, because the distribution is symmetric and $Q(q'|q) = Q(q|q')$, then the acceptance probability simplifies to 
+
+$$a(q'|q) = \min \left( 1, \frac{\pi(q')}{\pi(q)} \right).$$
+
+There are some issues that arise with the Metropolis-Hastings algorithm. Each proposal is biased towards larger volumes (such as the tails of the distribution). Although the algorithm will reject these proposals because the density is smaller, this can lead to many rejected proposals. This is especially true in higher dimensions, where in some instances, virtually every proposal step will be rejected, and even finishing one "journey" across the typical set might be unattainable. In better scenarios, there is still often autocorrelation in the draws that has to be accounted for.
+
 ### Gibbs Sampling
 
 Gibbs Sampling is one of the most common Markov Chain Monte Carlo Algorithms used for Bayesian computation. A special case of the Metropolis-Hastings algorithm, a Gibbs sampler works by generating a multi-dimensional markov chain, with one dimension for each unknown variable of interest. By splitting the vector of random unknown variables, the algorithm samples each subvector one by one, conditional on the most recent values of the other variables. 
@@ -52,8 +66,6 @@ Lunn et. all outlines the Gibbs sampler algorithm as follows: If we have a vecto
     - Continue this process for the remainder of the $k$ elements of $\theta$.
 3. Repeat step 2 for the total decided number of iterations that the sampler will run. 
 
-
-
 The beauty of the Gibbs sampling strategy is that, no matter how complex the space of the posterior distribution is, sampling from these high-dimensional spaces can be broken down into more straightforward draws from one-dimensional distributions. Gibbs sampling is also easier to understand and implement, which makes it very versatile. However, full conditional distributions for each draw are needed in order to do the method.
 
 Because the Gibbs sampler is a random-walk algorithm, if several variables are highly correlated, traversing the space can take a very high amount of iterations because the step-size needs to be small in order to not step outside the target distribution. A two-dimensional example of this is seen in Figure 1, where the joint distribution of $\theta_1$ and $\theta_2$ is highlgy correlated. Since each Markov transition only allows us to move in the direction of one dimension at a time, it may take many steps in order to travel up and down the parameter space, as demonstrated by the red arrows. In reality, the movement of the chains will be much more random since the algorithm does not know which direction will allow the chain to most efficiently travel through the posterior.
@@ -68,38 +80,38 @@ include_graphics("Paper-Figures/Gibbs2.png")
 
 ### Hamiltonian Monte Carlo
 
-A main of objective of Hamiltonian Monte Carlo is to use the geometry of the typical set to help us know where to sample from, instead of blindly using a guess-and-check method (Betancourt HMC Youtube talk). This method utilizes Hamiltonian Dynamics, which is a physics system that has three elements: position, momentum, and potential energy variables. To use Hamiltonian Dynamics to traverse the typical set we are interested in, each parameters of interest is transformed into a position variable, which can be visualized as a frictionless puck sliding over a surface of varying height. Each position variable $p$ has an associated momentum variable $q$ that defines the direction and magnitude of the movement of the "puck". At any given time, the value of the parameter can be found as the position of $p$ in some dimension. 
+A main of objective of Hamiltonian Monte Carlo methods is to use our knowledge of the geometry of the target distribution to guide our sampling efforts, instead of utilizing a random-walk algorithm (Betancourt HMC Youtube talk). The density function of the target distribution is translated into a potential energy function, which is used in Hamiltonian Dynamics, a physics system that we employ in order to yield monte carlo draws. To use this dynamic system to obtain draws, each parameter is transformed into a position variable, where the position of the variable can be interpreted as the value of the parameter at that point in time. Each position variable $q$ also has one associated momentum variable $p$ which will guide the movement of the position variable inside the simulation. 
 
-We define the joint probability of the position $p$ and momentum $q$ as $\pi(q,p) = \pi(q|p) \pi(p)$. This structure allows us at anytime to throw out $q$ and recover the value of $p$, which holds the position values of the parameter(s). The Hamiltonian is defined as 
+The joint probability distribution of the position $p$ and momentum $q$ is $\pi(q,p) = \pi(p|q) \pi(q)$. Although both $q$ and $p$ are being used jointly to determine movement, we can find the marginal distribution $\pi(q)$ at any time to recover the values of the position variables.
+
+The Hamiltonian is a set of equations defined as 
 
 \begin{align*}
   H(q,p) &= -\log \pi (p|q) \pi(q) \\
    &= -\log \pi (p|q) - \log \pi(q) \\
    &= - K - V,\\
 \end{align*}
-where $K$ is potential energy and $V$ is kinetic energy. Taking partial derivatives of the Hamiltonian yields Hamilton's equations, which is where we obtain our vector field.
+where $K$ is potential energy and $V$ is kinetic energy. Taking partial derivatives of the Hamiltonian yields Hamilton's equations, which is where we obtain our vector field that guides the movement of the position variables:
 
 \begin{align*}
   \frac{dq}{dt} &= \frac{\partial K}{\partial p} \\ 
   \frac{dp}{dt} &= - \frac{\partial K}{\partial q} - \frac{\partial V}{\partial q}.
 \end{align*}
 
-Hamiltonian Dynamics can be used to sample from the target distribution by translating the density function of the distribution to a potential energy function, and obtaining position variables (and associated momentum variables) for parameters of interest. We can simulate a markov chain where each iteration consists of the following steps:
+We can simulate a Hamiltonian monte carlo markov chain where each iteration consists of the following steps:
 
 1. New values for the momentum variables are randomly drawn from their Gaussian distribution, independent of the current values of the position variables
 2. A metropolis update is performed, using hamiltonian dynamics to propose a new state for the position variables. The proposed state is either accepted or rejected based on the Hamiltonian Monte Carlo probability function used. If the proposed state is rejected, the next state is the same as the current one.
 
-Hamiltonian Monte Carlo methods are very robust, in that the markov chains seldom get caught in complex regions of the posterior compared to other common MCMC methods. When the chains do get caught, the HMC chains break so obviously that errors can be easily spotted and reported to the user.
-  
+```{r, echo = FALSE, eval = TRUE, out.width = "50%", fig.align='center'}
+include_graphics("Paper-Figures/HMC projecting down.png")
+```
 
-### STAN
-STAN 2015
-- Based on a probabilistic programming language that is more flexible and expressive than BUGS/JAGS.
-- Based on HMC
-- Works in command line, Python, and R
-- "STAN is a platform for Bayesian inference that tries to abstract as much computation away as possible, so users can focus on building complex models"
+![\textit{A visual representation from Betancourt of lifting up off the parameter space (illustrated in red) to a higher-dimension phase space to sample when using HMC.}](Paper-Figures/Blank.png)
 
+While the probability distribution for the position variables is defined by the target distribution, the choice of the conditional distribution the momentum, which is equivalent the kinetic energy function, is up to the user. This choice is very important as it can drastically affect the simulation. There are several common gaussian distributions used for these distributions, which are used by default in the implementations that utilize HMC methods.
 
+Hamiltonian Monte Carlo methods are very robust, in that the markov chains get "stuck" in complex regions of the posterior less frequently than other common MCMC methods. When the markov chains do get stuck, it is easy for the program running the sampler to spot and report to the user.
 
 # Bayesian Samplers
 
@@ -120,27 +132,39 @@ In general, there are six steps needed to run bayesian models in WinBUGS/OpenBUG
 
 ## OpenBUGS
 
-OpenBugs is the oldest of the Bayesian samplers that we use. OpenBugs is designed for Windows machines, but there is a workaround to run it on MacOS and Linux, using WINE, a program designed to run Windows software on other operating systems. OpenBugs can be used through the actual click-and-point application, or through \texttt{R}, using the \texttt{R2OpenBugs} package, which allows for the user to send model scripts and data to OpenBugs without needing to leave the \texttt{R} interface. The \texttt{R} command to run OpenBugs is \texttt{bugs()}. Using this method causes OpenBugs to run invisibly in the background and return the results, unless an argument is specified to debug code in the actual application itself, which can be very useful. When using R to run OpenBugs, there is little way to know what went wrong if the code errors somewhere without interacting with the OpenBugs program itself. Using the \texttt{debug = T} argument within \texttt{bugs()} will cause the application to run in the forefront as if it were actually being used directly by the user. This way, any messages given by the application while running can be viewed directly. It is recommend to use \texttt{debug = T} only when debugging, as it does slow down the sampling process slightly. OpenBugs has many tools to visualize the performance the sampler which are easy to use. The biggest drawback of using the OpenBugs application directly is that specifiying the data can be tedious if the data is not very small in size or design. Using R to specify the data is much easier. One unique feature in OpenBugs is the Doodle tool, which allows for model specification through the creation of a diagram of nodes representing the parameters. Though using Doodle can be helpful for illustration, it is not used often in practice.
+OpenBUGS is the oldest of the Bayesian samplers that we use, maintained only as recently as 2014. OpenBugs is a program for Windows machines, but there are workarounds to run it on MacOS and Linux, such as WINE or a virtual machine.  OpenBUGS can be used through the actual click-and-point application, or through \texttt{R}, using the \texttt{R2OpenBugs} package, which allows for the user to send model scripts and data to OpenBugs without needing to leave the \texttt{R} interface. OpenBUGS is based on the BUGS model specification language, which is a small-to-moderately sized set of functions and commands that allow for extensive specification of bayesian models. Several other common bayesian sampling implementations are made to closely mimic the BUGS language as well.
+
+<!-- Using this method causes OpenBugs to run invisibly in the background and return the results, unless an argument is specified to debug code in the actual application itself, which can be very useful. When using R to run OpenBugs, there is little way to know what went wrong if the code errors somewhere without interacting with the OpenBugs program itself. Using the \texttt{debug = T} argument within \texttt{bugs()} will cause the application to run in the forefront as if it were actually being used directly by the user. This way, any messages given by the application while running can be viewed directly. It is recommend to use \texttt{debug = T} only when debugging, as it does slow down the sampling process slightly.  -->
+
+OpenBugs has many tools to visualize the performance the sampler which are easy to use. The biggest drawback of using the OpenBugs application directly is that specifiying the data can be tedious if the data is not very small in size or design. Using R to specify the data is much easier. One unique feature in OpenBugs is the Doodle tool, which allows for model specification through the creation of a diagram of nodes representing the parameters. Though using Doodle can be helpful for illustration, it is not used often in daily practice.
+
+```{r, echo = FALSE, eval = TRUE, out.width = "50%", fig.align='center'}
+include_graphics("Paper-Figures/Doodle.png")
+```
+
+![\textit{An example of the OpenBUGS visual tool DoodleBUGS.}](Paper-Figures/Blank.png)
 
 ## JAGS
 
-In terms of model specification, JAGS is very similar to OpenBugs, but works more seemlessly in R using the package \texttt{rjags}. JAGS was developed independently of OpenBUGS, but uses the BUGS language for most of its model specification syntax. The \texttt{runjags} is an optional package that allows for the JAGS model script to be inputted as a string, and run using the \texttt{run.jags()} function. Since JAGS runs inside \texttt{R} itself, it is very easy to work with. Helpful errors are given when there is an issue with the model code or sampling process. JAGS is often a very fast sampler, especially for less complicated models. 
+In terms of model specification, JAGS is very similar to OpenBugs, as it is based on the BUGS model specification language. However, JAGS is always interacted with entirely in R, making the bayesian inference process more seemless, using the R package \texttt{rjags}. The \texttt{runjags} is an optional package that allows for the JAGS model script to be inputted as a string, and run using the \texttt{run.jags()} function. Built on C++, JAGS is able to run MCMC sampling process very quickly. There is plenty of documentation and support available for JAGS, which is still maintained. 
 
 ## Nimble
 
-Nimble is an extension of Bugs that allows for bayesian computation within \texttt{R}, but uses C++ under the hood to compile models and algorithms for speed. Using the \texttt{nimble} package, Nimble can perform MCMC bayesian computations, but also allows for other types of algorithms to be loaded or custom-built. It can also compile other code without BUGS models into C++ for other uses. For the purpose of bayesian sampling using MCMC, Nimble is used very similarly to BUGS in practicality. The flexibility of Nimble is not needed in most cases when doing MCMC. The model specification language is almost identical to OpenBugs. A model can be both compiled and run using the function \texttt{nimbleMCMC()}. Because the model is compiled using C++ each time, this can drastically increase the total computation time as compared to other sampling methods. Occasionally, Nimble can also freeze up or fail, which can take a bit of time to fix.
+Nimble allows for bayesian computation within \texttt{R}, like JAGS and OpenBUGS, but is also made for more flexible statistical modeling. It uses C++ under the hood to compile models and algorithms. Using the \texttt{nimble} package, Nimble can perform MCMC bayesian sampling using common algorithms, but also allows for other types of algorithms to be loaded or custom-built. It can also compile other code without BUGS models into C++ for other uses. For the purpose of bayesian sampling using MCMC, Nimble is used very similarly to JAGS and OpenBUGS in practicality, as its model specification language is similar. The flexibility of Nimble is not needed in most cases when doing bayesian MCMC methods. The default sampling method in Nimble is Gibbs sampling, but other methods can be used as well. Because the model has to be compiled first for C++ before sampling each time, this can drastically increase the total computation time as compared to other sampling methods. 
 
 ## STAN
 
-STAN is a language in-and-of itself used for statistcal modeling and data analysis. STAN can be used in several programming languages, including \texttt{R} and Python. While many bayesian samplers use Gibbs sampling, STAN uses Hamiltonian Monte Carlo under the hood, a more computationally efficient sampler that is based on an advanced physics simulation. This can greatly reduce the computational time for many types of statistical models, especially for more complicated ones. Like Nimble, STAN compiles each model, but one big advantage is that it can store each compiled model in a .Rds file, which allows for repeated use without the need to re-compile each time. In \texttt{R}, STAN is used through the \texttt{rstan} package, which allows for data to be loaded through normal \texttt{R} data structures. The biggest practical difference in using STAN compared to other bayesian computational methods is in the model specification process. STAN requires a model object in the form of a .stan file, which is created in a very unique language that is more formal than in BUGS. A .stan file, either created through a character string in R or in a seperate text file, can be used by the \texttt{stan()} function, which takes the file along with the data to perform the sampling. There is a very robust set of manuals for STAN users, compared to other methods.
+STAN is a language in-and-of itself used for statistcal modeling and data analysis. STAN can be used in several programming languages, including \texttt{R} and Python. STAN uses Hamiltonian Monte Carlo sampling methods, which ideally can reduce the computational time for many types of statistical models. Like Nimble, STAN compiles each model for C++, but one convenient feature is that the user can store each compiled model in a file, which allows for repeated use without the need to re-compile each time. In \texttt{R}, STAN is used through the \texttt{rstan} package, which allows for data to be loaded through normal \texttt{R} data structures. The biggest practical difference in using STAN compared to other bayesian computational methods is in the model specification process. STAN requires a model object in the form of a .stan file, which is created in a very unique language that is more formal than BUGS syntax. A .stan file, either created through a character string in R or in a seperate text file, can be used by the \texttt{stan()} function, which takes the file along with the data to perform the sampling. There is a very robust set of manuals for STAN users, including many papers written on the subject.
 
 ## Greta
 
-Greta, a very recent addition to the list of bayes computational methods, is made specifically for use in \texttt{R}, making the model and data specification process as easy as possible. Not only does it utilize Hamiltonian Monte Carlo methods for sampling, but it also uses Google TensorFlow to perform its calculations, and allows for more flexible use of CPUs and GPUs. Unfortunately, as of the writing of this, it is still in need of lots of development, and lacks an appropriate amount of documentation and support for users. Computationally, it is very slow compared to the other bayes methods, especially in simple cases. There are several types of semi-common models that greta seems unable to properly handle in model specfication at the moment. Greta also attempts to make model specification very user-friendly, but uses some very common function names in the process that might override other often-used \texttt{R} functions. Greta does offer a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
+Greta, a more recent addition to the list of bayesian computational implementations, is made specifically for easy use in \texttt{R}. The model and data specification process is intended to be as straightforward as possible users who are familiar with \texttt{R} but not as familiar with other bayes methods. Not only does it utilize Hamiltonian Monte Carlo methods for sampling, but it also uses Google TensorFlow,a machine learning platform from Google, to perform its calculations. This allows for more flexible use of CPUs and GPUs. Greta offers a model visualization tool that does not exist in any of the other Bayesian samplers, in that it can provide a graphical representation of the specified model through the use of nodes and arrows. This tool can be very useful in trying to explain how all the components of a model work together. 
+
+Unfortunately, as of the writing of this, Greta is still in need of lots of development, and lacks an appropriate amount of documentation and support for users, compared to the other implementations mentioned previously. The sampling process can slow compared to the other bayes methods when using identical sampling configurations, especially for simple models. There are also several types of models that Greta seems unable to properly specify at the moment.
 
 # Example Model
 
-To illustrate how each bayesian computational method is used in practice, we will demonstrate how to construct a sampler for a simple Beta-Binomial model for each of the five methods we are studying. 
+To illustrate how each bayesian computational method is used in practice, we will demonstrate how to construct a model and provide data for a simple Beta-Binomial model for each of the five implementations. 
 
 ## Data Preparation
 
@@ -160,73 +184,135 @@ model_data <- list(
 )
 ```
 
+An extra step is required when using Nimble, which requires for any constant variables to be seperated from other data variables.
+
+```{r}
+model_data <- list(
+  "y" = y
+)
+
+nimble_constants <- list(
+  "n" = n 
+)
+```
+
+
 ## Model Configuration
 
-Next, we will pick some basic model parameters. Here, we will use four chains, a warmup of 1,000 iterations, and a total iteration count of 10,000.
+Next, we will pick some basic bayesian sampling parameters. Here, we will use four markov chains, an initial warmup (or burnin, depending on the sampling method) of 1,000 iterations, and a total iteration count of 10,000.
 
 ```{r}
 n_chains <- 4L
 n_iter <- 1e4L
-n_warmup <- 1e3L
+n_initial <- 1e3L
 ```
 
+## Model Specification
 
-## OpenBUGS / R2OpenBUGS
+For several implementations, the model script code can be specified using a seperate text file that is read by the function that compiles and runs the sampler. There are also ways to input the model script as an R object itself. For each implementation, if possible, we will demonstrate how to use both methods of model specification.
 
-When using OpenBUGS through R, we will use the `R2OpenBUGS` library in order to pipe the data and model code into the program rather than using manual entry. This requires the creation of a temporary file that holds the model text that will be used.
+## OpenBUGS
+
+When using OpenBUGS through R, we will use the `R2OpenBUGS` library in order to pipe the data and model code into the program rather than using manual entry. One way to specify the model code is by creating a text file that will be read into R when compiling and running the sampler. We will create the text file `model.bugs` with the BUGS model script code inside. 
+
+```{txt}
+## model.bugs
+
+model {
+  y ~ dbin(p,n)
+  p ~ dbeta(1,1)
+}
+
+##
+```
+
+In the R script, we will load the `R2OpenBUGS` library, specify a vector of parameters to monitor (which in this case has just one parameter), and run the sampler using the `bugs()` function. As is the case with all bayesian sampling implementations, the function call needs the model, data, parameters, and model configuration settings specified. The `"inits" = NULL` argument tells OpenBUGS to randomly generate initial values for the parameters based on the prior distributions for those parameters, instead of the user having to provide them. 
 
 ```{r}
 ## load library
 library(R2OpenBUGS)
 
-## model script code
+## parameters to monitor
+bugs_monitor <- c("p")
+
+## run the model
+bugs_fit <- bugs(
+  "model.file" = "model.bugs", 
+  "data" = model_data, 
+  "parameters.to.save" = bugs_monitor, 
+  "inits" = NULL, 
+  "n.chains" = n_chains, 
+  "n.iter" = n_iter, 
+  "n.burnin" = n_initial
+)
+```
+
+The alternative approach to model specification when using `R2OpenBUGS` is to provide the model code entirely through R. The user can wrap the model script code inside a function, and then create a temporary text file that will be read into the `bugs()` function.
+
+```{r}
+## model script code in a function
 bugs_model <- function() {
   y ~ dbin(p,N)
   p ~ dbeta(1,1)
 }
 
-## parameters to monitor
-bugs_monitor <- "p"
-
 ## temporary model script text file creation
-bugs.file <- file.path(tempdir(), "model.txt")
+model.bugs <- file.path(tempdir(), "model.txt")
 write.model(bugs_model, bugs.file)
-
-## run the model
-bugs_fit <- bugs(
-    "model.file" = bugs.file, "data" = model_data, "parameters.to.save" = bugs_monitor, 
-    "inits" = NULL, "n.chains" = n_chains, "n.iter" = n_iter, "n.burnin" = n_warmup
-)
 ```
+
 
 ## JAGS
 
-In JAGS, the model script simply needs to be inputted as a string to the `run.jags()` function.
+Model specification in JAGS is very similar to OpenBUGS in that we can either create a text file, or specify the model through R. Since the specification language for JAGS is based on the BUGS language, the code will often look very similar. 
+
+```{txt}
+## model.jags
+
+model {
+  y ~ dbin(p,n)
+  p ~ dbeta(1,1)
+}
+
+##
+```
+
+In R, the model script file location is inputted in the `"model"` argument. 
+
 ```{r}
 ## load libraries
 library("rjags"); library("runjags")
-
-## model script code
-jags_model <- "
-  model{
-    y ~ dbin(p,n)
-    p ~ dbeta(1,1)
-  }
-"
 
 ## parameters to monitor
 jags_monitor <- c("p")
 
 ## run the model
 jags_fit <- run.jags(
-    "model" = jags_model, "data" = model_data, "monitor" = jags_monitor, 
-    "n.chains" = n_chains, "sample" = n_iter, "burnin" = n_warmup
+  "model" = "model.jags", 
+  "data" = model_data, 
+  "monitor" = jags_monitor, 
+  "n.chains" = n_chains, 
+  "sample" = n_iter, 
+  "burnin" = n_warmup
 ) 
+```
+
+To create the model script inside R, we can wrap the script in quotes to make it a character object. 
+
+```{r}
+## model script code
+model.jags <- "
+  model{
+    y ~ dbin(p,n)
+    p ~ dbeta(1,1)
+  }
+"
 ```
 
 ## Nimble
 
-An additional step needed when using Nimble, which is to specify initial values for all parameters of interest, since the sampler cannot generate initial values on its own.
+The only way to specify a model when using Nimble is to use the `NimbleCode()` function and wrap the code inside using curly braces. Initial values can't be generated automatically and must be specified for all parameters of interest.
+
 ```{r}
 ## load library
 library(nimble)
@@ -247,9 +333,14 @@ nimble_inits <- list(
 
 ## run the model
 nimble_fit <- nimbleMCMC(
-    "code" = nimble_model, "data" = model_data, 
-    "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
-    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  "code" = nimble_model,
+  "data" = model_data,
+  "inits" = nimble_inits,
+  "monitors" = nimble_monitor,
+  "nchains" = n_chains,
+  "niter" = n_iter,
+  "nburnin" = n_warmup,
+  "summary" = TRUE
 )
 ```
 
@@ -257,8 +348,11 @@ nimble_fit <- nimbleMCMC(
 
 Running models in STAN requires a .stan file which contains the model script code, written in the unique STAN syntax. This can either be a seperate file, or can be inputted as a character string. It is generally recommended to use a seperate .stan file, espcially when using RStudio, which can do syntax highlighting and point out errors in STAN code.
 
-Here is the .stan file for this example, which is saved as "stan_file.stan". Each STAN file contains a data block, parameters block, and model block at a minimum.
-```{r}
+Here is the .stan file for this example, which is saved as "stan_file.stan". Each STAN file contains a data block, parameters block, and model block at a minimum. The data block initializes each data variable, the parameters block initializes any parameters to monitor, and the model block contains more familiar looking model script code. 
+
+```{txt}
+## model.stan
+
 data {
   int<lower=0> y;
   int<lower=0> n;
@@ -272,6 +366,8 @@ model {
   y ~ binomial(n,p);
   p ~ beta(1,1);
 }
+
+##
 ```
 
 The sampler can then be run simply using the `stan()` function call, with the .stan file location specified.
@@ -282,22 +378,25 @@ library("rstan")
 
 ## run the model
 stan_fit <- stan(
-    "file" = "stan_file.stan", "data" = model_data, 
-    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  "file" = "model.stan",
+  "data" = model_data,
+  "chains" = n_chains,
+  "iter" = n_iter,
+  "warmup" = n_warmup
 )
 ```
 
 
 ## Greta
 
-Each data variable needs to be converted to a greta array before it can be used in the model.
+Model specification in Greta is more intuitive for R users, but requires the extra step of converting existing data objects into Greta arrays, using the `as_data()` function from the `greta` package. 
 ```{r}
 ## convert data into greta arrays
 y <- greta::as_data(y)
 n <- greta::as_data(n)
 ```
 
-Next, the priors for each parameter of interested are defined using functions that describe the prior distribution paramter values. The distribution of the response variable given in the data is then described using the `distribution()` function. The model is compiled using the `model()` function, before being sampled by `mcmc()`.
+Next, the priors for each parameter of interested are defined using functions that describe the prior distribution paramter values. The relationship between the data and parameters is defined using the  `distribution()` function. The model is compiled using the `model()` function, which requires a vector of all the parameters to model.  Finally, sampling is done by calling `mcmc()`.
 
 ```{r}
 ## load library
@@ -310,10 +409,12 @@ p <- beta(1,1)
 distribution(y) <- binomial(n,p)
 
 ## compile model and run
-greta_model <- model(p)
+greta_model <- model(c(p))
 greta_fit <- mcmc(
-    "model" = greta_model, "n_samples" = n_iter,
-    "warmup" = n_warmup,"chains" = n_chains
+  "model" = greta_model,
+  "n_samples" = n_iter,
+  "warmup" = n_warmup,
+  "chains" = n_chains
 )
 ```
 
