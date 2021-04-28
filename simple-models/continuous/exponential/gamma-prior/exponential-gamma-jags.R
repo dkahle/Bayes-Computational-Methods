@@ -77,7 +77,8 @@ if (!currently_benchmarking()) {
   )
   
   
-  jags_fit_object %>% bayesplot::mcmc_dens()
+  jags_fit_object %>% mcmc_areas()
+  jags_fit_object %>% mcmc_intervals()
   
   
   ## assess convergence issues 
@@ -85,6 +86,7 @@ if (!currently_benchmarking()) {
   
   jags_fit_object %>% mcmc_acf_bar()
   jags_fit_object %>% mcmc_trace()
+  jags_fit_object %>% mcmc_hist_by_chain()
   
   
   

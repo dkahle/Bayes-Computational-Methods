@@ -69,7 +69,7 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   summary(stan_fit)$summary
   get_posterior_mean(stan_fit)
   stan_dens(stan_fit) + theme_bw()
-  stan_fit %>% as.array() %>% bayesplot::mcmc_dens()
+  stan_fit %>% as.array() %>% mcmc_areas()
   
   
   
@@ -77,8 +77,9 @@ if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])
   ###################################################################################
   
   stan_fit %>% as.array() %>% mcmc_acf_bar()
-  stan_fit %>% as.array() %>% mcmc_pairs()
   stan_fit %>% as.array() %>% mcmc_trace()
+  stan_fit %>% as.array() %>% mcmc_hist_by_chain()
+  
   
   # see each chain
   stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)

@@ -48,7 +48,8 @@ num_iterations <- 20 # Number of times you want to benchmark each model\
 
 source(here("benchmark-accuracy-function.R"))
 
-true_dist <- distr::Norm(0.9031468, sqrt(0.2))
+true_mean <- 0.9031468
+true_dist <- distr::Norm(true_mean, sqrt(0.2))
 
 run_accuracy_benchmark(true_dist,num_iterations, n_iter / 2, n_warmup / 2)
 

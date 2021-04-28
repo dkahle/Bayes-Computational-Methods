@@ -12,17 +12,18 @@ library("here")
 ## generate/specify data
 ################################################################################
 
-N <- 200L # sample size
-theta <- c(0.7)
+N <- 50L # sample size
+theta <- c(0.6)
 sigma <- 1
 
 set.seed(1)
 (y <- arima.sim(model = list(ma = theta), sd = sigma, n = N) %>% as.numeric())
 
+# epsilon <- y
 epsilon <- y * 1.01
 
 t <- 1:length(y)
-ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
+# ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
 
 y_1 <- y[1]
 y_2 <- y[2:length(y)]
@@ -50,14 +51,14 @@ distribution(y) <- normal(mu + theta * epsilon, sigma)
 
 greta_model <- model(mu, theta, sigma)
 
-plot(greta_model)
+# plot(greta_model)
 
 ## configure model settings
 ################################################################################
 
-n_chains <- 1
-n_iter <- 5000
-n_warmup <- 2000
+n_chains <- 4
+n_iter <- 1e4L
+n_warmup <- 1e3L
 
 
 
@@ -80,6 +81,26 @@ if (!currently_benchmarking()) {
   ################################################################################
   
   summary(greta_fit)
+  
+  greta_fit_object <- greta_fit %>% as.array()
+  dim(greta_fit_object) <- c(dim(greta_fit_object), 1)
+  dimnames(greta_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = c("theta")
+  )
+  
+  
+  greta_fit_object %>% mcmc_areas()
+  greta_fit_object %>% mcmc_intervals()
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+  greta_fit_object %>% mcmc_acf_bar()
+  greta_fit_object %>% mcmc_trace()
+  greta_fit_object %>% mcmc_hist_by_chain()
   
 }
 

@@ -6,20 +6,21 @@ library("parallel"); options(mc.cores = detectCores())
 library("bench")
 library("here")
 library("rjags"); library("runjags")
-library("R2OpenBUGS")
-library("nimble")
+# library("R2OpenBUGS")
 library("rstan"); rstan_options(auto_write = FALSE)
 library("greta")
+library("nimble")
 options("bayes_benchmark" = TRUE)
 
 ## Source code
 ################################################################################
 
 source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-jags.R"))
-source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
-source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
+# source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-bugs.R"))
 source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-stan.R"))
 source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-greta.R"))
+source(here("simple-models", "discrete", "poisson", "gamma-prior", "poisson-gamma-nimble.R"))
+
 
 options("bayes_benchmark" = FALSE)
 

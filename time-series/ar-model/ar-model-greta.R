@@ -22,7 +22,7 @@ set.seed(1)
 (y <- arima.sim(model = list(ar = beta), sd = sigma, n = N) %>% as.numeric())
 
 t <- 1:length(y)
-ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
+# ggplot(data.frame(t = t, y = y), aes(t,y)) + geom_line()
 
 y_1 <- y[1:(length(y) - 1)] # data excluding the last point
 z_1 <- y[2:length(y)] # data excluding the first point
@@ -69,6 +69,26 @@ if (!currently_benchmarking()) {
   ################################################################################
   
   summary(greta_fit)
+  
+  greta_fit_object <- greta_fit %>% as.array()
+  dim(greta_fit_object) <- c(dim(greta_fit_object), 1)
+  dimnames(greta_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = c("theta")
+  )
+  
+  
+  greta_fit_object %>% mcmc_areas()
+  greta_fit_object %>% mcmc_intervals()
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+  greta_fit_object %>% mcmc_acf_bar()
+  greta_fit_object %>% mcmc_trace()
+  greta_fit_object %>% mcmc_hist_by_chain()
   
 }
 

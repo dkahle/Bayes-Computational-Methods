@@ -91,9 +91,25 @@ if (!currently_benchmarking()) {
   
   bugs_fit$summary
   
+  bugs_fit_object <- bugs_fit$sims.array[,,1]
+  dim(bugs_fit_object) <- c(dim(bugs_fit_object), 1)
+  dimnames(bugs_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = bugs_monitor
+  )
+  
+  
+  bugs_fit_object %>% mcmc_areas()
+  bugs_fit_object %>% mcmc_intervals()
+  
   
   ## assess convergence issues 
   ###################################################################################
+  
+  bugs_fit_object %>% mcmc_acf_bar()
+  bugs_fit_object %>% mcmc_trace()
+  bugs_fit_object %>% mcmc_hist_by_chain()
   
 }
 
