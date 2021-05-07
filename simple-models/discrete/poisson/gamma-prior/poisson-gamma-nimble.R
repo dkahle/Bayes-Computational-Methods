@@ -54,11 +54,52 @@ source(here("currently-benchmarking.R"))
 
 if (!currently_benchmarking()) {
   
+  ## All-in-one method # 16 seconds
+  ##############################
+  tictoc::tic()
   nimble_fit <- nimbleMCMC(
     "code" = nimble_model, "data" = nimble_data, "constants" = nimble_constants,
     "inits" = nimble_inits, "monitors" = nimble_monitor, "nchains" = n_chains, 
     "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
   )
+  tictoc::toc()
+  
+  ## Step-by-step method allowing for saving objects
+  ##############################
+  
+  nimble_model <- nimbleModel(
+    "code" = nimble_model, 
+    "data" = nimble_data, 
+    "constants" = nimble_constants,
+    "inits" = nimble_inits
+  )
+  
+  nimble_MCMC <- buildMCMC(nimble_model)
+  nimble_compile <- compileNimble(nimble_model)
+  nimble_compile_mcmc <- compileNimble(nimble_MCMC, "project" = nimble_compile)
+  
+  file_location <- here("simple-models", "discrete", "poisson", "gamma-prior", "nimble.RDS")
+  saveRDS(nimble_compile_mcmc, file = file_location, compress = F)
+  
+  
+  nimble_compile_mcmc <- readRDS(file_location)
+  
+  # run with compiled mcmc object
+  nimble_fit <- runMCMC(
+    "mcmc" = nimble_compile_mcmc,
+    "inits" = nimble_inits, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  )
+  
+  # run without compiled object # 344 seconds (20x slower than compiling)
+  tictoc::tic()
+  nimble_fit <- runMCMC(
+    "mcmc" = nimble_MCMC,
+    "inits" = nimble_inits, "nchains" = n_chains, 
+    "niter" = n_iter, "nburnin" = n_warmup, "summary" = TRUE
+  )
+  tictoc::toc()
+  
   
   
   ## assess fit
@@ -77,7 +118,8 @@ if (!currently_benchmarking()) {
   )
   
   
-  nimble_fit_object %>% bayesplot::mcmc_dens()
+  nimble_fit_object %>% mcmc_areas()
+  nimble_fit_object %>% mcmc_intervals()
   
   
   ## assess convergence issues 
@@ -85,6 +127,7 @@ if (!currently_benchmarking()) {
   
   nimble_fit_object %>% mcmc_acf_bar()
   nimble_fit_object %>% mcmc_trace()
+  nimble_fit_object %>% mcmc_hist_by_chain()
 
 }  
   

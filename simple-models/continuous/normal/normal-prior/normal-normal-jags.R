@@ -40,6 +40,15 @@ jags_model <- "
   }
 "
 
+jags_model <- "
+  model{
+    for (i in 1:N) {
+      y[i] ~ dnorm(mu, tau)
+    }
+    mu ~ dnorm(0, 1)
+  }
+"
+
 jags_monitor <- c("mu")
 
 
@@ -79,7 +88,8 @@ if (!currently_benchmarking()) {
   )
   
   
-  jags_fit_object %>% bayesplot::mcmc_dens()
+  jags_fit_object %>% mcmc_areas()
+  jags_fit_object %>% mcmc_intervals()
   
   
   ## assess convergence issues 
@@ -87,6 +97,7 @@ if (!currently_benchmarking()) {
   
   jags_fit_object %>% mcmc_acf_bar()
   jags_fit_object %>% mcmc_trace()
+  jags_fit_object %>% mcmc_hist_by_chain()
   
   
   

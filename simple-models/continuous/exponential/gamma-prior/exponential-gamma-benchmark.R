@@ -31,7 +31,7 @@ n_warmup <- 1e3L
 ## benchmarking
 ###################################################################################
 
-num_iterations <- 50 # Number of times you want to benchmark each model\
+num_iterations <- 1 # Number of times you want to benchmark each model\
 
 rds_file_location <- here("simple-models", "continuous", "exponential", "gamma-prior", "exponential-gamma.rds")
 
@@ -40,6 +40,19 @@ source(here("benchmark-function.R"))
 # choose to include stan compilation time with argument "stan_compile = TRUE"
 run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
+
+
+## benchmarking accuracy
+###################################################################################
+
+num_iterations <- 20 # Number of times you want to benchmark each model\
+
+source(here("benchmark-accuracy-function.R"))
+
+true_dist <- distr::Gammad(11,1 / 17.85244)
+true_mean <- 11 / 17.85244
+
+run_accuracy_benchmark(true_dist,num_iterations, n_iter, n_warmup)
 
 
 

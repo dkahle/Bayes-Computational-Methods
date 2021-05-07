@@ -1,14 +1,13 @@
 data {
   int<lower=0> N;
-  real y[N];
+  real<lower=0> y[N];
 }
 
 parameters {
-  real lambda;                
+  real<lower=0> lambda;                
 }
 
 model {
   y ~ exponential(lambda);
   lambda ~ gamma(1,1);
 }
-

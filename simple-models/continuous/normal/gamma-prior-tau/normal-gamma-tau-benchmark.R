@@ -41,6 +41,18 @@ source(here("benchmark-function.R"))
 run_benchmark(rds_file_location)
 run_benchmark(rds_file_location, stan_compile = TRUE)
 
+## benchmarking accuracy
+###################################################################################
+
+num_iterations <- 20 # Number of times you want to benchmark each model\
+
+source(here("benchmark-accuracy-function.R"))
+
+true_dist <- distr::Gammad(6, 1 / 8.658606)
+true_mean <- 6 / 8.658606
+
+run_accuracy_benchmark(true_dist,num_iterations, n_iter, n_warmup)
+
 
 
 

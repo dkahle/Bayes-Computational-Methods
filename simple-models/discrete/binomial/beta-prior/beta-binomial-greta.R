@@ -36,8 +36,8 @@ plot(greta_model)
 ## configure model settings
 ################################################################################
 
-n_chains <- 4L
-n_iter <- 1e4L
+n_chains <- 50L
+n_iter <- (1e4L * 4) / n_chains
 n_warmup <- 1e3L
 
 
@@ -61,6 +61,26 @@ if (!currently_benchmarking()) {
   ################################################################################
   
   summary(greta_fit)
+  
+  greta_fit_object <- greta_fit %>% as.array()
+  dim(greta_fit_object) <- c(dim(greta_fit_object), 1)
+  dimnames(greta_fit_object) <- list(
+    "iterations" = NULL, 
+    "chains" = 1:n_chains, 
+    "parameters" = c("theta")
+  )
+  
+  
+  greta_fit_object %>% mcmc_areas()
+  greta_fit_object %>% mcmc_intervals()
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+  greta_fit_object %>% mcmc_acf_bar()
+  greta_fit_object %>% mcmc_trace()
+  greta_fit_object %>% mcmc_hist_by_chain()
   
 }
 

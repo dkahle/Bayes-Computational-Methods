@@ -1,0 +1,103 @@
+## load required packages and set basic options
+################################################################################
+
+library("here")
+library("tidyverse"); theme_set(theme_minimal())
+library("parallel"); options(mc.cores = detectCores())
+library("rstan"); rstan_options(auto_write = TRUE)
+library("bayesplot")
+library("bench")
+library("MASS")
+
+
+
+## generate/specify data
+################################################################################
+
+n <- 500L # sample size
+alpha <- 0 # intercept
+m <- 10 # number of coefficients
+
+set.seed(1)
+
+beta <- rnorm(m, 0, 0.1) # single coefficient
+
+(x <- mvrnorm(n, rep(0, m), diag(0.5, m))) # observed x values
+
+i <- 1
+gen_theta_0 <- function(i) {
+  rnorm(1, alpha, 0.01) + sum(x %*% mvrnorm(1, beta, diag(0.01, m)))
+}
+
+(theta_0 <- 1:n %>% map_dbl(gen_theta_0))
+
+# theta_0 <- rnorm(n,alpha,0.5) + mvrnorm(1,beta, diag(m, 0.5)) %*% x 
+
+(theta <- exp(theta_0) / (1 + exp(theta_0))) # generated values of bernoulli theta
+(y <- rbinom(n,1,theta))
+
+
+stan_data <- list(
+  "n" = n,
+  "m" = m,
+  "y" = y, 
+  "x" = x
+)
+
+
+
+## specify stan model
+################################################################################
+
+# read it in from file
+stan_file <- here("large-data-parameters-models", "regression-models", "logistic-regression", "large-logistic-regression.stan")
+
+# file.show(stan_file)
+
+
+
+## configure model settings
+################################################################################
+
+n_chains <- 4L
+n_iter <- 1e4L
+n_warmup <- 1e3L
+
+
+## fit model
+################################################################################
+if (is.null(options()[["bayes_benchmark"]]) || !(options()[["bayes_benchmark"]])) {
+  
+  stan_fit <- stan(
+    "file" = stan_file, "data" = stan_data, 
+    "chains" = n_chains, "iter" = n_iter, "warmup" = n_warmup
+  )
+  
+  
+  
+  
+  ## assess fit
+  ################################################################################
+  
+  summary(stan_fit)$summary
+  get_posterior_mean(stan_fit)
+  stan_dens(stan_fit) + theme_bw()
+  stan_fit %>% as.array() %>% mcmc_areas()
+  
+  
+  
+  ## assess convergence issues 
+  ###################################################################################
+  
+  stan_fit %>% as.array() %>% mcmc_acf_bar()
+  stan_fit %>% as.array() %>% mcmc_trace()
+  stan_fit %>% as.array() %>% mcmc_hist_by_chain()
+  
+  
+  # see each chain
+  stan_fit %>% rstan::extract(permuted = FALSE, inc_warmup = TRUE)
+  
+}
+
+
+

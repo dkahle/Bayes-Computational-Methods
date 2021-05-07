@@ -89,7 +89,8 @@ if (!currently_benchmarking()) {
   )
   
   
-  bugs_fit_object %>% bayesplot::mcmc_dens()
+  bugs_fit_object %>% mcmc_areas()
+  bugs_fit_object %>% mcmc_intervals()
   
   
   ## assess convergence issues 
@@ -97,6 +98,7 @@ if (!currently_benchmarking()) {
   
   bugs_fit_object %>% mcmc_acf_bar()
   bugs_fit_object %>% mcmc_trace()
+  bugs_fit_object %>% mcmc_hist_by_chain()
   
 }
 

@@ -1,0 +1,2 @@
+load("/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods-Private/large-data-parameters-models/time-series/ar-model/ar-model-results-greta.rds")
+load("/Users/evanmiyakawa/Git Projects/Bayes-Computational-Methods/Bayes-Computational-Methods-Private/simulation-results/large-data-parameters-models/time-series/ar-model/large-ma-model-results-temp.rds")
